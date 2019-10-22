@@ -1,0 +1,31 @@
+{
+    "name": "tde/craft-commerce-product-bundles",
+    "description": "Combine multiple products into a purchasable bundle to sell these for a special price.",
+    "type": "craft-plugin",
+    "require": {
+        "craftcms/cms": "^3.2",
+        "craftcms/commerce": "^2.1"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "TDE",
+            "email": "info@tde.nl"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "tde\\craft\\commerce\\bundles\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Commerce Product Bundles",
+        "handle": "commerce-product-bundles",
+        "hasCpSettings": false,
+        "hasCpSection": true,
+        "changelogUrl": "https://raw.githubusercontent.com/tdeNL/craft-commerce-product-bundles/master/CHANGELOG.md",
+        "components": {
+        },
+        "class": "tde\\craft\\commerce\\bundles\\Plugin"
+    }
+}
