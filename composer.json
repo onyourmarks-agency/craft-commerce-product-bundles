@@ -21,10 +21,12 @@
     "extra": {
         "name": "Commerce Product Bundles",
         "handle": "commerce-product-bundles",
-        "hasCpSettings": false,
+        "hasCpSettings": true,
         "hasCpSection": true,
         "changelogUrl": "https://raw.githubusercontent.com/tdeNL/craft-commerce-product-bundles/master/CHANGELOG.md",
+        "documentationUrl": "https://github.com/tdeNL/craft-commerce-product-bundles",
         "components": {
+            "productBundleService": "tde\\craft\\commerce\\bundles\\services\\ProductBundleService"
         },
         "class": "tde\\craft\\commerce\\bundles\\Plugin"
     }

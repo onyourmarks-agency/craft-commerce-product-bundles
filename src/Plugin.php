@@ -2,16 +2,23 @@
 
 namespace tde\craft\commerce\bundles;
 
+use craft\events\RegisterUrlRulesEvent;
+use craft\helpers\UrlHelper;
+use craft\web\UrlManager;
 use tde\craft\commerce\bundles\elements\ProductBundle;
 
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\services\Elements;
 use craft\web\twig\variables\Cp;
+use tde\craft\commerce\bundles\models\Settings;
+use tde\craft\commerce\bundles\services\ProductBundleService;
 use yii\base\Event;
 
 /**
  * Class Plugin
+ *
+ * @property ProductBundleService $productBundleService
  *
  * @package tde\craft\commerce\bundles
  */
@@ -23,6 +30,11 @@ class Plugin extends \craft\base\Plugin
     public static $instance;
 
     /**
+     * @var bool
+     */
+    public $hasCpSettings = true;
+
+    /**
      * @inheritDoc
      */
     public function init()
@@ -30,9 +42,29 @@ class Plugin extends \craft\base\Plugin
         parent::init();
         self::$instance = $this;
 
-        $this->_registerCpNavItem();
+        $this->setComponents([
+            'productBundleService' => ProductBundleService::class,
+        ]);
+
         $this->_registerEvents();
+        $this->_registerCpNavItem();
         $this->_registerCpRoutes();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function createSettingsModel()
+    {
+        return new Settings();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsResponse()
+    {
+        return \Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('commerce-product-bundles/settings'));
     }
 
     /**
@@ -86,6 +118,17 @@ class Plugin extends \craft\base\Plugin
      */
     protected function _registerCpRoutes()
     {
-
+        Event::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_CP_URL_RULES,
+            function (RegisterUrlRulesEvent $event) {
+                $event->rules = array_merge($event->rules, [
+                    'commerce/product-bundles' => 'commerce-product-bundles/bundles/index',
+                    'commerce/product-bundles/new' => 'commerce-product-bundles/bundles/edit',
+                    'commerce/product-bundles/<productBundleId:\d+>' => 'commerce-product-bundles/bundles/edit',
+                    'commerce/product-bundles/settings' => 'commerce-product-bundles/settings',
+                ]);
+            }
+        );
     }
 }

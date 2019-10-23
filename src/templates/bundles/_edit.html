@@ -1,0 +1,75 @@
+{% extends '_layouts/cp' %}
+
+{% import '_includes/forms' as forms %}
+
+{% set title = productBundle.id ? ('Edit'|t('commerce-product-bundles')) ~ productBundle.title :  ('New product bundles'|t('commerce-product-bundles')) %}
+{% set selectedSubnavItem = 'product-bundles' %}
+{% set fullPageForm = true %}
+
+{% block content %}
+    {{ actionInput('commerce-product-bundles/bundles/save') }}
+    {{ hiddenInput('productBundleId', productBundle.id) }}
+    {{ hiddenInput('siteId', productBundle.siteId) }}
+    {{ redirectInput('commerce/product-bundles') }}
+    {{ csrfInput() }}
+
+    <div id="fields">
+        {{ forms.textField({
+            label: 'Title'|t('commerce-product-bundles'),
+            site: productBundle.site,
+            id: 'title',
+            name: 'title',
+            value: productBundle.title,
+            errors: productBundle.getErrors('title'),
+            first: true,
+            autofocus: true,
+            required: true,
+            maxlength: 255
+        }) }}
+
+        {{ forms.elementSelectField({
+            id: 'products',
+            label: 'Products'|t('commerce-product-bundles'),
+            name: 'products',
+            elements: productBundle.getProducts(),
+            elementType: productElementType,
+            limit: null,
+            instructions: 'Select two or more products to combine in this bundle.'|t('commerce-product-bundles'),
+            errors: productBundle.getErrors('products')
+        }) }}
+
+        {{ forms.textField({
+            id: 'sku',
+            label: 'SKU'|t('commerce-product-bundles'),
+            required: true,
+            name: 'sku',
+            value: productBundle.sku,
+            class: 'code',
+            errors: productBundle.getErrors('sku')
+        }) }}
+
+        {{ forms.textField({
+            id: 'price',
+            label: 'Price'|t('commerce-product-bundles')~' ('~craft.commerce.paymentCurrencies.primaryPaymentCurrency.iso|upper~')',
+            name: 'price',
+            value: (productBundle.price == '0' ? '0'|number : (productBundle.price ? productBundle.price|number ?: '')),
+            required: true,
+            errors: productBundle.getErrors('price')
+        }) }}
+
+        <div>
+            {% set tabs = productBundle.getFieldLayout().getTabs() %}
+            {% for tab in tabs %}
+                {% if tabs|length > 1 %}
+                    <h2>{{ tab.name }}</h2>
+                {% endif %}
+                <div>
+                    {% include '_includes/fields' with {
+                        fields: tab.getFields(),
+                        element: productBundle,
+                    } only %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends '_layouts/cp' %}
+
+{% set fullPageForm = true %}
+
+{% set title = 'Product bundles settings'|t('commerce-product-bundles') %}
+{% set selectedSubnavItem = 'product-bundles' %}
+
+{% block content %}
+    {{ actionInput('commerce-product-bundles/settings/save') }}
+    {{ redirectInput('commerce/product-bundles/settings') }}
+    {{ csrfInput() }}
+
+    {% include "_includes/fieldlayoutdesigner" with {
+        fieldLayout: settings.getFieldLayout()
+    } only %}
+{% endblock %}
