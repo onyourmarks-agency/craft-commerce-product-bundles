@@ -480,11 +480,7 @@ class ProductBundle extends Purchasable
      */
     public function getProducts()
     {
-        if (!$this->getId()) {
-            return [];
-        }
-
-        if (is_null($this->_products)) {
+        if (is_null($this->_products) && $this->getId()) {
             $this->_products = Plugin::getInstance()->productBundleService->getProductsForBundle($this);
         }
 
@@ -505,28 +501,6 @@ class ProductBundle extends Purchasable
         }
     }
 
-    public function populateLineItem(LineItem $lineItem)
-    {
-        $errors = [];
-
-        if ($lineItem->purchasable === $this) {
-
-            $bundleStock = Bundles::$plugin->bundles->getBundleStock($lineItem->purchasable->id);
-
-            if ($bundleStock != "unlimited") {
-                if ($lineItem->qty > $bundleStock) {
-                    $lineItem->qty = $bundleStock;
-                    $errors[] = 'You reached the maximum stock of ' . $lineItem->purchasable->getDescription();
-                }
-            }
-        }
-        if ($errors) {
-            $cart = CommercePlugin::getInstance()->getCarts()->getCart();
-            $cart->addErrors($errors);
-            \Craft::$app->getSession()->setError(implode(',', $errors));
-        }
-    }
-
     /**
      * Updates Stock count from completed order.
      *
@@ -534,28 +508,29 @@ class ProductBundle extends Purchasable
      */
     public function afterOrderComplete(Order $order, LineItem $lineItem)
     {
+        foreach ($this->getProducts() as $product) {
+            $purchasable = CommercePlugin::getInstance()->getVariants()->getVariantById($product['purchasableId']);
 
-        foreach ($this->_getBundleProducts() as $product) {
-
-            $purchasable = Commerce::getInstance()->getVariants()->getVariantById($product['purchasableId']);
-
-            // Don't reduce stock of unlimited items.
-            if (!$purchasable->hasUnlimitedStock) {
-                // Update the qty in the db directly
-                \Craft::$app->getDb()->createCommand()->update('{{%commerce_variants}}',
-                    ['stock' => new Expression('stock - :qty', [':qty' => ($lineItem->qty * $product['qty'])])],
-                    ['id' => $purchasable->id])->execute();
-
-                // Update the stock
-                $purchasable->stock = (new Query())
-                    ->select(['stock'])
-                    ->from('{{%commerce_variants}}')
-                    ->where('id = :variantId', [':variantId' => $purchasable->id])
-                    ->scalar();
-
-                \Craft::$app->getTemplateCaches()->deleteCachesByElementId($this->id);
+            if ($purchasable->hasUnlimitedStock) {
+                continue;
             }
 
+            // Update the qty in the db directly
+            \Craft::$app->getDb()->createCommand()
+                ->update(
+                    '{{%commerce_variants}}',
+                    ['stock' => new Expression('stock - :qty', [':qty' => ($lineItem->qty * $product['qty'])])],
+                    ['id' => $purchasable->id])
+                ->execute();
+
+            // Update the stock
+            $purchasable->stock = (new Query())
+                ->select(['stock'])
+                ->from('{{%commerce_variants}}')
+                ->where('id = :variantId', [':variantId' => $purchasable->id])
+                ->scalar();
+
+            \Craft::$app->getTemplateCaches()->deleteCachesByElementId($this->id);
         }
     }
 

@@ -27,7 +27,7 @@ class SettingsController extends Controller
         $this->requireCpRequest();
 
         return $this->renderTemplate('commerce-product-bundles/settings', [
-            'settings' => Plugin::$instance->getSettings()
+            'fieldLayout' => \Craft::$app->getFields()->getLayoutByType(ProductBundle::class)
         ]);
     }
 

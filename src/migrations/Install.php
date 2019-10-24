@@ -52,7 +52,7 @@ class Install extends Migration
             'taxCategoryId' => $this->integer()->notNull(),
             'shippingCategoryId' => $this->integer()->notNull(),
             'postDate' => $this->dateTime(),
-            'expiryDate' => $this->dateTime(),
+            'expiryDate' => $this->dateTime()->null(),
             'sku' => $this->string()->notNull(),
             'price' => $this->decimal(12, 2)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),

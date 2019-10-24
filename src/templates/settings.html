@@ -11,6 +11,6 @@
     {{ csrfInput() }}
 
     {% include "_includes/fieldlayoutdesigner" with {
-        fieldLayout: settings.getFieldLayout()
+        fieldLayout: fieldLayout
     } only %}
 {% endblock %}

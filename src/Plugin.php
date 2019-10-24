@@ -4,6 +4,7 @@ namespace tde\craft\commerce\bundles;
 
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\UrlHelper;
+use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use tde\craft\commerce\bundles\elements\ProductBundle;
 
@@ -13,6 +14,7 @@ use craft\services\Elements;
 use craft\web\twig\variables\Cp;
 use tde\craft\commerce\bundles\models\Settings;
 use tde\craft\commerce\bundles\services\ProductBundleService;
+use tde\craft\commerce\bundles\variables\ProductBundlesVariable;
 use yii\base\Event;
 
 /**
@@ -64,7 +66,31 @@ class Plugin extends \craft\base\Plugin
      */
     public function getSettingsResponse()
     {
-        return \Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('commerce-product-bundles/settings'));
+        return \Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('commerce/product-bundles/settings'));
+    }
+
+    /**
+     * Register events
+     */
+    protected function _registerEvents()
+    {
+        Event::on(
+            Elements::class,
+            Elements::EVENT_REGISTER_ELEMENT_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = ProductBundle::class;
+            }
+        );
+
+        Event::on(
+            CraftVariable::class,
+            CraftVariable::EVENT_INIT,
+            function (Event $e) {
+                /** @var CraftVariable $variable */
+                $variable = $e->sender;
+                $variable->set('commerceProductBundles', ProductBundlesVariable::class);
+            }
+        );
     }
 
     /**
@@ -95,20 +121,6 @@ class Plugin extends \craft\base\Plugin
                         array_slice($event->navItems['commerce']['subnav'], $pos)
                     );
                 }
-            }
-        );
-    }
-
-    /**
-     * Register events
-     */
-    protected function _registerEvents()
-    {
-        Event::on(
-            Elements::class,
-            Elements::EVENT_REGISTER_ELEMENT_TYPES,
-            function (RegisterComponentTypesEvent $event) {
-                $event->types[] = ProductBundle::class;
             }
         );
     }

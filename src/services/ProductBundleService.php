@@ -4,10 +4,11 @@ namespace tde\craft\commerce\bundles\services;
 
 use craft\base\ElementInterface;
 use craft\commerce\elements\Product;
+use craft\db\Query;
 use craft\errors\ElementNotFoundException;
 use tde\craft\commerce\bundles\elements\ProductBundle;
 use tde\craft\commerce\bundles\models\ProductBundleProduct;
-use tde\craft\commerce\bundles\records\ProductBundle as ProductBundleRecord;
+use tde\craft\commerce\bundles\records\ProductBundleProduct as ProductBundleProductRecord;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -24,7 +25,14 @@ class ProductBundleService extends Component
      */
     public function getProductBundleById(int $id, $siteId = null)
     {
-        return \Craft::$app->getElements()->getElementById($id, ProductBundle::class, $siteId);
+        return \Craft::$app->getElements()->getElementById(
+            $id,
+            ProductBundle::class,
+            $siteId,
+            [
+                'status' => null
+            ]
+        );
     }
 
     /**
@@ -62,13 +70,31 @@ class ProductBundleService extends Component
      */
     public function getProductsForBundle(ProductBundle $productBundle)
     {
-        $records = ProductBundleRecord::find()
+        $records = ProductBundleProductRecord::find()
             ->where(['productBundleId' => $productBundle->getId()])
             ->all();
 
-        return array_map(function (ProductBundleProduct $record) {
+        return array_map(function (ProductBundleProductRecord $record) {
             return $record->getProduct();
         }, $records);
+    }
+
+    /**
+     * @param Product $product
+     * @return array
+     */
+    public function getProductBundlesByProduct(Product $product)
+    {
+        $productBundleIds = (new Query())
+            ->select(['bundles.id'])
+            ->from('{{%commerce_product_bundles_bundles}} bundles')
+            ->innerJoin('{{%commerce_product_bundles_bundles_products}} products', 'products.productBundleId = bundles.id')
+            ->andWhere('products.productId = ' . (int) $product->getId())
+            ->column();
+
+        return array_map(function ($productBundleId) {
+            return ProductBundle::findOne(['id' => $productBundleId]);
+        }, $productBundleIds);
     }
 
     /**
@@ -76,6 +102,6 @@ class ProductBundleService extends Component
      */
     protected function deleteAllProductsForBundle(ProductBundle $productBundle)
     {
-        ProductBundleRecord::deleteAll(['productBundleId' => $productBundle->getId()]);
+        ProductBundleProductRecord::deleteAll(['productBundleId' => $productBundle->getId()]);
     }
 }

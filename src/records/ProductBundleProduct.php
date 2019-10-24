@@ -30,10 +30,10 @@ class ProductBundleProduct extends ActiveRecord
     }
 
     /**
-     * @return ActiveQueryInterface
+     * @return Product
      */
-    public function getProduct(): ActiveQueryInterface
+    public function getProduct(): Product
     {
-        return $this->hasOne(Product::class, ['id' => 'productId']);
+        return Product::findOne(['id' => $this->productId]);
     }
 }

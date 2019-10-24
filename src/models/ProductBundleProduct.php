@@ -20,7 +20,7 @@ class ProductBundleProduct extends Model
     public $id;
 
     /**
-     * @var ProductBundle
+     * @var ProductBundleElement
      */
     public $productBundle;
 
@@ -32,7 +32,7 @@ class ProductBundleProduct extends Model
     /**
      * @return int
      */
-    public function getId(): int
+    public function getId()
     {
         return $this->id;
     }
@@ -46,9 +46,9 @@ class ProductBundleProduct extends Model
     }
 
     /**
-     * @return ProductBundle
+     * @return ProductBundleElement
      */
-    public function getProductBundle(): ProductBundle
+    public function getProductBundle(): ProductBundleElement
     {
         return $this->productBundle;
     }

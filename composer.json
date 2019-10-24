@@ -22,7 +22,7 @@
         "name": "Commerce Product Bundles",
         "handle": "commerce-product-bundles",
         "hasCpSettings": true,
-        "hasCpSection": true,
+        "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/tdeNL/craft-commerce-product-bundles/master/CHANGELOG.md",
         "documentationUrl": "https://github.com/tdeNL/craft-commerce-product-bundles",
         "components": {

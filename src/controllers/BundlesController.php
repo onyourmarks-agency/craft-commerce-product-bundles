@@ -8,9 +8,11 @@ use craft\errors\MissingComponentException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Localization;
 use craft\web\Controller;
+use tde\craft\commerce\bundles\assetbundles\productbundles\ProductBundlesAsset;
 use tde\craft\commerce\bundles\elements\ProductBundle;
 use tde\craft\commerce\bundles\Plugin;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -25,35 +27,42 @@ class BundlesController extends Controller
     /**
      * @return Response
      * @throws BadRequestHttpException
+     * @throws InvalidConfigException
      */
     public function actionIndex(): Response
     {
         $this->requireCpRequest();
+
+        $this->view->registerAssetBundle(ProductBundlesAsset::class);
 
         return $this->renderTemplate('commerce-product-bundles/bundles/index');
     }
 
     /**
      * @param int|null $productBundleId
+     * @param ProductBundle|null $productBundle
+     * @param array $variables
      * @return Response
-     * @throws NotFoundHttpException
      * @throws BadRequestHttpException
+     * @throws NotFoundHttpException
      */
-    public function actionEdit(int $productBundleId = null): Response
+    public function actionEdit(int $productBundleId = null, ProductBundle $productBundle = null, array $variables = []): Response
     {
         $this->requireCpRequest();
 
         if ($productBundleId) {
-            if (!$productBundle = ProductBundle::findOne(['id' => $productBundleId])) {
+            if (!$productBundle = Plugin::getInstance()->productBundleService->getProductBundleById($productBundleId)) {
                 throw new NotFoundHttpException();
             }
         } else {
-            $productBundle = new ProductBundle();
+            $productBundle = $productBundle ?? new ProductBundle();
         }
 
         return $this->renderTemplate('commerce-product-bundles/bundles/_edit', [
             'productBundle' => $productBundle,
             'productElementType' => Product::class,
+            'siteIds' => \Craft::$app->getSites()->getAllSiteIds(),
+            'enabledSiteIds' => \Craft::$app->getSites()->getAllSiteIds(),
         ]);
     }
 
@@ -85,32 +94,27 @@ class BundlesController extends Controller
             $productBundle = new ProductBundle();
         }
 
-        $productBundle->siteId = $siteId ?? $productBundle->siteId;
-        $productBundle->enabled = (bool )$request->getBodyParam('enabled');
-        $productBundle->price = Localization::normalizeNumber($request->getBodyParam('price'));
-        $productBundle->sku = $request->getBodyParam('sku');
+        $productBundle->title = $request->getBodyParam('title', $productBundle->title);
         $productBundle->setProducts($request->getBodyParam('products'));
+        $productBundle->setFieldValuesFromRequest('fields');
 
-        if ($postDate = $request->getBodyParam('postDate')) {
-            $productBundle->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
-        }
+        // meta
+        $productBundle->postDate = $request->getBodyParam('postDate')['date'] ? DateTimeHelper::toDateTime($request->getBodyParam('postDate')) ?: null : null;
+        $productBundle->expiryDate = $request->getBodyParam('expiryDate')['date'] ? DateTimeHelper::toDateTime($request->getBodyParam('expiryDate')) ?: null : null;
 
-        if ($expiryDate = $request->getBodyParam('expiryDate')) {
-            $productBundle->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
-        }
+        $productBundle->siteId = $siteId ?? $productBundle->siteId;
+        $productBundle->enabled = (bool) $request->getBodyParam('enabled');
+        $productBundle->enabledForSite = (bool) $request->getBodyParam('enabledForSite', $productBundle->enabledForSite);
 
         $productBundle->taxCategoryId = $request->getBodyParam('taxCategoryId');
         $productBundle->shippingCategoryId = $request->getBodyParam('shippingCategoryId');
 
-        $productBundle->enabledForSite = (bool) $request->getBodyParam('enabledForSite', $productBundle->enabledForSite);
-        $productBundle->title = $request->getBodyParam('title', $productBundle->title);
+        $productBundle->price = Localization::normalizeNumber($request->getBodyParam('price'));
+        $productBundle->sku = $request->getBodyParam('sku');
 
-        $productBundle->setFieldValuesFromRequest('fields');
-
+        // save
         if (!Plugin::$instance->productBundleService->save($productBundle)) {
             \Craft::$app->getSession()->setError(\Craft::t('commerce-product-bundles', 'Couldn’t save product bundle.'));
-
-            // Send the category back to the template
             \Craft::$app->getUrlManager()->setRouteParams([
                 'productBundle' => $productBundle
             ]);
