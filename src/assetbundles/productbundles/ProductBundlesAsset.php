@@ -1,6 +1,6 @@
 <?php
 
-namespace tde\craft\commerce\bundles\assetbundles\productBundles;
+namespace tde\craft\commerce\bundles\assetbundles\productbundles;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
@@ -8,7 +8,7 @@ use craft\web\assets\cp\CpAsset;
 /**
  * Class ProductBundlesAsset
  *
- * @package tde\craft\commerce\bundles\assetbundles\productBundles
+ * @package tde\craft\commerce\bundles\assetbundles\productbundles
  */
 class ProductBundlesAsset extends AssetBundle
 {
@@ -17,7 +17,7 @@ class ProductBundlesAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@tde/craft/commerce/bundles/assetbundles/productBundles/dist';
+        $this->sourcePath = '@tde/craft/commerce/bundles/assetbundles/productbundles/dist';
 
         $this->depends = [
             CpAsset::class,
