@@ -30,9 +30,9 @@ class ProductBundleProduct extends ActiveRecord
     }
 
     /**
-     * @return Product|null
+     * @return Product
      */
-    public function getProduct()
+    public function getProduct(): Product
     {
         return Product::findOne([
             'id' => $this->productId,

@@ -75,11 +75,9 @@ class ProductBundleService extends Component
             ->where(['productBundleId' => $productBundle->getId()])
             ->all();
 
-        $products = array_map(function (ProductBundleProductRecord $record) {
+        return array_map(function (ProductBundleProductRecord $record) {
             return $record->getProduct();
         }, $records);
-
-        return $products;
     }
 
     /**
