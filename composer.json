@@ -6,7 +6,7 @@
         "craftcms/cms": "^3.2",
         "craftcms/commerce": "^2.1"
     },
-    "license": "MIT",
+    "license": "proprietary",
     "authors": [
         {
             "name": "TDE",
