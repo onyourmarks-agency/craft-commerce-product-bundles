@@ -11,6 +11,7 @@ use tde\craft\commerce\bundles\models\ProductBundleProduct;
 use tde\craft\commerce\bundles\records\ProductBundleProduct as ProductBundleProductRecord;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Class ProductBundleService
@@ -74,14 +75,17 @@ class ProductBundleService extends Component
             ->where(['productBundleId' => $productBundle->getId()])
             ->all();
 
-        return array_map(function (ProductBundleProductRecord $record) {
+        $products = array_map(function (ProductBundleProductRecord $record) {
             return $record->getProduct();
         }, $records);
+
+        return $products;
     }
 
     /**
      * @param Product $product
      * @return array
+     * @throws InvalidConfigException
      */
     public function getProductBundlesByProduct(Product $product)
     {
@@ -92,9 +96,15 @@ class ProductBundleService extends Component
             ->andWhere('products.productId = ' . (int) $product->getId())
             ->column();
 
-        return array_map(function ($productBundleId) {
-            return ProductBundle::findOne(['id' => $productBundleId]);
-        }, $productBundleIds);
+        $productBundles = [];
+        foreach ($productBundleIds as $productBundleId) {
+            $productBundle = ProductBundle::findOne(['id' => $productBundleId]);
+            if ($this->isPurchasable($productBundle)) {
+                $productBundles[] = $productBundle;
+            }
+        }
+
+        return $productBundles;
     }
 
     /**
@@ -103,5 +113,29 @@ class ProductBundleService extends Component
     protected function deleteAllProductsForBundle(ProductBundle $productBundle)
     {
         ProductBundleProductRecord::deleteAll(['productBundleId' => $productBundle->getId()]);
+    }
+
+    /**
+     * Check if the product bundle is available for purchase
+     *
+     * @param ProductBundle $productBundle
+     * @return bool
+     * @throws InvalidConfigException
+     */
+    protected function isPurchasable(ProductBundle $productBundle)
+    {
+        // not enabled
+        foreach ($productBundle->getProducts(true) as $product) {
+            if (!$product->enabled) {
+                return false;
+            }
+        }
+
+        // not in stock
+        if (!$productBundle->hasStock()) {
+            return false;
+        }
+
+        return true;
     }
 }
