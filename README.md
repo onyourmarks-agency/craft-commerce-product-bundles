@@ -40,11 +40,15 @@ The "Product bundles" navigation item will be added in the subnav of Commerce.
 Add your desired bundles and set the new price.
 Through the plugin settings it is also possible to add custom fields to enhance the user experience of the bundles and provide more information.
 
+![Add product bundle in CP](https://github.com/tdeNL/craft-commerce-product-bundles/blob/master/resources/screenshot-cp.png?raw=true)
+
 ### Twig example
 
 The plugin is designed to promote product bundles from within the product detail page.
 When viewing product A, the user may be encouraged in buying a bundle containing product A and product B.
 The Twig example below illustrates how to render bundles in a product detail page:
+
+![Twig example](https://github.com/tdeNL/craft-commerce-product-bundles/blob/master/resources/screenshot-twig.png?raw=true)
 
 ```
 {# templates/shop/products/_entry.html #}
