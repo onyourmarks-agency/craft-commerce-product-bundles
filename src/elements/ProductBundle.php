@@ -140,7 +140,7 @@ class ProductBundle extends Purchasable
         $sources = [
             [
                 'key' => '*',
-                'label' => \Craft::t('commerce-bundles', 'All bundles'),
+                'label' => \Craft::t('commerce-product-bundles', 'All bundles'),
                 'defaultSort' => ['title', 'ASC']
             ]
         ];
@@ -164,8 +164,8 @@ class ProductBundle extends Purchasable
         return [
             \Craft::$app->getElements()->createAction([
                 'type' => Delete::class,
-                'confirmationMessage' => \Craft::t('commerce-bundles', 'Are you sure you want to delete the selected product bundle(s)?'),
-                'successMessage' => \Craft::t('commerce-bundles', 'Bundles deleted.'),
+                'confirmationMessage' => \Craft::t('commerce-product-bundles', 'Are you sure you want to delete the selected product bundle(s)?'),
+                'successMessage' => \Craft::t('commerce-product-bundles', 'Bundles deleted.'),
             ])
         ];
     }
@@ -176,12 +176,11 @@ class ProductBundle extends Purchasable
     protected static function defineTableAttributes(): array
     {
         return [
-            'title' => ['label' => \Craft::t('commerce-bundles', 'Title')],
-            'slug' => ['label' => \Craft::t('commerce-bundles', 'Slug')],
-            'sku' => ['label' => \Craft::t('commerce-bundles', 'SKU')],
-            'price' => ['label' => \Craft::t('commerce-bundles', 'Price')],
-            'postDate' => ['label' => \Craft::t('commerce-bundles', 'Post Date')],
-            'expiryDate' => ['label' => \Craft::t('commerce-bundles', 'Expiry Date')],
+            'title' => ['label' => \Craft::t('commerce-product-bundles', 'Title')],
+            'sku' => ['label' => \Craft::t('commerce-product-bundles', 'SKU')],
+            'price' => ['label' => \Craft::t('commerce-product-bundles', 'Price')],
+            'postDate' => ['label' => \Craft::t('commerce-product-bundles', 'Post Date')],
+            'expiryDate' => ['label' => \Craft::t('commerce-product-bundles', 'Expiry Date')],
         ];
     }
 
@@ -212,10 +211,10 @@ class ProductBundle extends Purchasable
     protected static function defineSortOptions(): array
     {
         return [
-            'title' => \Craft::t('commerce-bundles', 'Title'),
-            'postDate' => \Craft::t('commerce-bundles', 'Post Date'),
-            'expiryDate' => \Craft::t('commerce-bundles', 'Expiry Date'),
-            'price' => \Craft::t('commerce-bundles', 'Price'),
+            'title' => \Craft::t('commerce-product-bundles', 'Title'),
+            'postDate' => \Craft::t('commerce-product-bundles', 'Post Date'),
+            'expiryDate' => \Craft::t('commerce-product-bundles', 'Expiry Date'),
+            'price' => \Craft::t('commerce-product-bundles', 'Price'),
         ];
     }
 
@@ -241,10 +240,10 @@ class ProductBundle extends Purchasable
     public function getStatuses(): array
     {
         return [
-            self::STATUS_LIVE => \Craft::t('commerce-bundles', 'Live'),
-            self::STATUS_PENDING => \Craft::t('commerce-bundles', 'Pending'),
-            self::STATUS_EXPIRED => \Craft::t('commerce-bundles', 'Expired'),
-            self::STATUS_DISABLED => \Craft::t('commerce-bundles', 'Disabled')
+            self::STATUS_LIVE => \Craft::t('commerce-product-bundles', 'Live'),
+            self::STATUS_PENDING => \Craft::t('commerce-product-bundles', 'Pending'),
+            self::STATUS_EXPIRED => \Craft::t('commerce-product-bundles', 'Expired'),
+            self::STATUS_DISABLED => \Craft::t('commerce-product-bundles', 'Disabled')
         ];
     }
 
@@ -555,7 +554,7 @@ class ProductBundle extends Purchasable
 
                 return \Craft::$app->getLocale()->getFormatter()->asCurrency($this->$attribute, strtoupper($code));
             case 'promotable':
-                return ($this->$attribute ? '<span data-icon="check" title="' . \Craft::t('commerce-bundles', 'Yes') . '"></span>' : '');
+                return ($this->$attribute ? '<span data-icon="check" title="' . \Craft::t('commerce-product-bundles', 'Yes') . '"></span>' : '');
             default:
                 return parent::tableAttributeHtml($attribute);
         }

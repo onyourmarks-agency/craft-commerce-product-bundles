@@ -33,6 +33,7 @@ class BundlesController extends Controller
     {
         $this->requireCpRequest();
 
+        $this->view->registerTranslations('commerce-product-bundles', ['Add product bundle']);
         $this->view->registerAssetBundle(ProductBundlesAsset::class);
 
         return $this->renderTemplate('commerce-product-bundles/bundles/index');

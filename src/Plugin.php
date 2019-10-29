@@ -4,6 +4,7 @@ namespace tde\craft\commerce\bundles;
 
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\UrlHelper;
+use craft\i18n\PhpMessageSource;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use tde\craft\commerce\bundles\elements\ProductBundle;
@@ -47,6 +48,13 @@ class Plugin extends \craft\base\Plugin
         $this->setComponents([
             'productBundleService' => ProductBundleService::class,
         ]);
+
+        \Craft::$app->i18n->translations['commerce-product-bundles'] = [
+            'class' => PhpMessageSource::class,
+            'sourceLanguage' => 'en-US',
+            'basePath' => __DIR__ . '/translations',
+            'allowOverrides' => true,
+        ];
 
         $this->_registerEvents();
         $this->_registerCpNavItem();

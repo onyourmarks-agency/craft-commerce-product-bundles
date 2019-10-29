@@ -89,7 +89,7 @@
 {% block details %}
     <div class="meta">
         {{ forms.dateTimeField({
-            label: 'Post Date'|t('commerce-bundles'),
+            label: 'Post Date'|t('commerce-product-bundles'),
             id: 'postDate',
             name: 'postDate',
             value: productBundle.postDate,
@@ -97,7 +97,7 @@
         }) }}
 
         {{ forms.dateTimeField({
-            label: 'Expiry Date'|t('commerce-bundles'),
+            label: 'Expiry Date'|t('commerce-product-bundles'),
             id: 'expiryDate',
             name: 'expiryDate',
             value: productBundle.expiryDate,
@@ -105,7 +105,7 @@
         }) }}
 
         {{ forms.lightswitchField({
-            label: 'Enabled'|t('commerce-bundles'),
+            label: 'Enabled'|t('commerce-product-bundles'),
             id: 'enabled',
             name: 'enabled',
             on: productBundle.enabled
@@ -113,7 +113,7 @@
 
         {% if craft.app.getIsMultiSite() %}
             {{ forms.lightswitchField({
-                label: 'Enabled for site'|t('commerce-bundles'),
+                label: 'Enabled for site'|t('commerce-product-bundles'),
                 id: 'enabledForSite',
                 name: 'enabledForSite',
                 on: productBundle.enabledForSite
@@ -125,7 +125,7 @@
 
     <div class="meta">
         {{ forms.selectField({
-            label: 'Tax Category'|t('commerce-bundles'),
+            label: 'Tax Category'|t('commerce-product-bundles'),
             name: 'taxCategoryId',
             value: productBundle.taxCategoryId,
             required: true,
@@ -138,7 +138,7 @@
         {% endfor %}
 
         {{ forms.selectField({
-            label: 'Shipping Category'|t('commerce-bundles'),
+            label: 'Shipping Category'|t('commerce-product-bundles'),
             name: 'shippingCategoryId',
             value: productBundle.shippingCategoryId,
             required: true,
@@ -151,22 +151,22 @@
     <div class="meta">
         {{ forms.textField({
             id: 'sku',
-            label: 'SKU'|t('commerce-bundles'),
+            label: 'SKU'|t('commerce-product-bundles'),
             required: true,
             name: 'sku',
             value: productBundle.sku,
             class: 'code',
-            placeholder: 'Enter SKU'|t('commerce-bundles'),
+            placeholder: 'Enter SKU'|t('commerce-product-bundles'),
             errors: productBundle.getErrors('sku')
         }) }}
 
         {{ forms.textField({
             id: 'price',
-            label: 'Price'|t('commerce-bundles'),
+            label: 'Price'|t('commerce-product-bundles'),
             required: true,
             name: 'price',
             value: (productBundle.price == '0' ? '0'|number : (productBundle.price ? productBundle.price|number ?: '')),
-            placeholder: 'Enter price'|t('commerce-bundles'),
+            placeholder: 'Enter price'|t('commerce-product-bundles'),
             unit: craft.commerce.paymentCurrencies.primaryPaymentCurrency.iso|upper,
             errors: productBundle.getErrors('price'),
         }) }}
@@ -175,12 +175,12 @@
     {% if productBundle.id %}
         <div class="meta read-only">
             <div class="data">
-                <h5 class="heading">{{ 'Date Created'|t('commerce-bundles') }}</h5>
+                <h5 class="heading">{{ 'Date Created'|t('commerce-product-bundles') }}</h5>
                 <div class="value">{{ productBundle.dateCreated|date('short') }} {{ productBundle.dateCreated|time('short') }}</div>
             </div>
 
             <div class="data">
-                <h5 class="heading">{{ 'Date Updated'|t('commerce-bundles') }}</h5>
+                <h5 class="heading">{{ 'Date Updated'|t('commerce-product-bundles') }}</h5>
                 <div class="value">{{ productBundle.dateUpdated|date('short') }} {{ productBundle.dateUpdated|time('short') }}</div>
             </div>
         </div>
