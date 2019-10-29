@@ -3,6 +3,10 @@
 namespace tde\craft\commerce\bundles;
 
 use craft\commerce\elements\Order;
+use craft\commerce\elements\Variant;
+use craft\commerce\events\LineItemEvent;
+use craft\commerce\models\LineItem;
+use craft\commerce\services\LineItems;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\UrlHelper;
 use craft\i18n\PhpMessageSource;
@@ -98,6 +102,23 @@ class Plugin extends \craft\base\Plugin
                 /** @var CraftVariable $variable */
                 $variable = $e->sender;
                 $variable->set('commerceProductBundles', ProductBundlesVariable::class);
+            }
+        );
+
+        Event::on(
+            LineItems::class,
+            LineItems::EVENT_POPULATE_LINE_ITEM,
+            function (LineItemEvent $lineItemEvent) {
+                if (!isset($lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantIds'])) {
+                    return;
+                }
+
+                $lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantMeta'] = [];
+
+                foreach ($lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantIds'] as $variantId) {
+                    $variant = Variant::findOne(['id' => $variantId]);
+                    $lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantMeta'][] = $variant->getSnapshot();
+                }
             }
         );
     }

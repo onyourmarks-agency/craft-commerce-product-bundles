@@ -37,11 +37,8 @@ use yii\db\Expression;
  */
 class ProductBundle extends Purchasable
 {
-    const EVENT_BEFORE_CAPTURE_PRODUCT_SNAPSHOT = 'beforeCaptureProductSnapshot';
-    const EVENT_AFTER_CAPTURE_PRODUCT_SNAPSHOT = 'afterCaptureProductSnapshot';
-
-    const EVENT_BEFORE_CAPTURE_VARIANT_SNAPSHOT = 'beforeCaptureVariantSnapshot';
-    const EVENT_AFTER_CAPTURE_VARIANT_SNAPSHOT = 'afterCaptureVariantSnapshot';
+    const EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT = 'beforeCaptureProductBundleSnapshot';
+    const EVENT_AFTER_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT = 'afterCaptureProductBundleSnapshot';
 
     const STATUS_LIVE = 'live';
     const STATUS_PENDING = 'pending';
@@ -494,7 +491,7 @@ class ProductBundle extends Purchasable
      */
     public function afterOrderComplete(Order $order, LineItem $lineItem)
     {
-        foreach ($lineItem->snapshot['options']['productBundleProducts'] as $productVariantId) {
+        foreach ($lineItem->snapshot['options']['productBundleProductsVariantIds'] as $productVariantId) {
             $purchasable = CommercePlugin::getInstance()->getVariants()->getVariantById($productVariantId);
 
             if ($purchasable->hasUnlimitedStock) {
@@ -526,96 +523,35 @@ class ProductBundle extends Purchasable
     public function getSnapshot(): array
     {
         $data = [];
-        $data['onSale'] = $this->getOnSale();
-        $data['cpEditUrl'] = $this->getCpEditUrl();
+        $data['type'] = self::class;
 
-        // Default Product custom field handles
-        $productFields = [];
-        $productFieldsEvent = new CustomizeProductSnapshotFieldsEvent([
-            'product' => $this->getProduct(),
-            'fields' => $productFields
-        ]);
-
-        // Allow plugins to modify Product fields to be fetched
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_CAPTURE_PRODUCT_SNAPSHOT)) {
-            $this->trigger(self::EVENT_BEFORE_CAPTURE_PRODUCT_SNAPSHOT, $productFieldsEvent);
-        }
-
-        // Product Attributes
-        if ($product = $this->getProduct()) {
-            $productAttributes = $product->attributes();
-
-            // Remove custom fields
-            if (($fieldLayout = $product->getFieldLayout()) !== null) {
-                foreach ($fieldLayout->getFields() as $field) {
-                    ArrayHelper::removeValue($productAttributes, $field->handle);
-                }
-            }
-
-            // Add back the custom fields they want
-            foreach ($productFieldsEvent->fields as $field) {
-                $productAttributes[] = $field;
-            }
-
-            $data['product'] = $this->getProduct()->toArray($productAttributes, [], false);
-
-            $productDataEvent = new CustomizeProductSnapshotDataEvent([
-                'product' => $this->getProduct(),
-                'fieldData' => $data['product']
-            ]);
-        } else {
-            $productDataEvent = new CustomizeProductSnapshotDataEvent([
-                'product' => $this->getProduct(),
-                'fieldData' => []
-            ]);
-        }
-
-        // Allow plugins to modify captured Product data
-        if ($this->hasEventHandlers(self::EVENT_AFTER_CAPTURE_PRODUCT_SNAPSHOT)) {
-            $this->trigger(self::EVENT_AFTER_CAPTURE_PRODUCT_SNAPSHOT, $productDataEvent);
-        }
-
-        $data['product'] = $productDataEvent->fieldData;
-
-        // Default Variant custom field handles
-        $variantFields = [];
-        $variantFieldsEvent = new CustomizeVariantSnapshotFieldsEvent([
-            'variant' => $this,
-            'fields' => $variantFields
+        // custom fields
+        $fields = [];
+        $fieldsEvent = new CustomizeProductSnapshotFieldsEvent([
+            'product' => $this,
+            'fields' => $fields
         ]);
 
         // Allow plugins to modify fields to be fetched
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_CAPTURE_VARIANT_SNAPSHOT)) {
-            $this->trigger(self::EVENT_BEFORE_CAPTURE_VARIANT_SNAPSHOT, $variantFieldsEvent);
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT)) {
+            $this->trigger(self::EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT, $fieldsEvent);
         }
 
-        $variantAttributes = $this->attributes();
-
-        // Remove custom fields
-        if (($fieldLayout = $this->getFieldLayout()) !== null) {
-            foreach ($fieldLayout->getFields() as $field) {
-                ArrayHelper::removeValue($variantAttributes, $field->handle);
-            }
-        }
-
-        // Add back the custom fields they want
-        foreach ($variantFieldsEvent->fields as $field) {
-            $variantAttributes[] = $field;
-        }
-
-        $variantData = $this->toArray($variantAttributes, [], false);
-
-        $variantDataEvent = new CustomizeVariantSnapshotDataEvent([
-            'variant' => $this,
-            'fieldData' => $variantData
+        $fieldData = $this->getSerializedFieldValues($fieldsEvent->fields);
+        $dataEvent = new CustomizeProductSnapshotDataEvent([
+            'product' => $this,
+            'fieldData' => $fieldData,
         ]);
 
-        // Allow plugins to modify captured Variant data
-        if ($this->hasEventHandlers(self::EVENT_AFTER_CAPTURE_VARIANT_SNAPSHOT)) {
-            $this->trigger(self::EVENT_AFTER_CAPTURE_VARIANT_SNAPSHOT, $variantDataEvent);
+        // Allow plugins to modify captured data
+        if ($this->hasEventHandlers(self::EVENT_AFTER_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT)) {
+            $this->trigger(self::EVENT_AFTER_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT, $dataEvent);
         }
 
-        return array_merge($variantDataEvent->fieldData, $data);
+        $data['fields'] = $dataEvent->fieldData;
+        $data['productId'] = $this->id;
+
+        return array_merge($this->getAttributes(), $data);
     }
 
     /**

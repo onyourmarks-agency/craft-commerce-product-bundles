@@ -70,13 +70,13 @@ The Twig example below illustrates how to render bundles in a product detail pag
                 <h5>{{ product.title }}</h5>
 
                 {% if product.variants|length > 1 %}
-                    <select name="options[productBundleProducts][]">
+                    <select name="options[productBundleProductsVariantIds][]">
                         {% for purchasable in product.variants %}
                             <option value="{{ purchasable.id }}">{{ purchasable.description }}</option>
                         {% endfor %}
                     </select>
                 {% else %}
-                    {{ hiddenInput('options[productBundleProducts][]', product.variants[0].id) }}
+                    {{ hiddenInput('options[productBundleProductsVariantIds][]', product.variants[0].id) }}
                 {% endif %}
 
                 {% if not loop.last %}
