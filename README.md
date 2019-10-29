@@ -34,4 +34,61 @@ This plugin can either be installed through the Plugin Store or using Composer.
  
 4. Hit the "Install" button for 'Commerce Product Bundles'.
 
+## Usage
+
+The "Product bundles" navigation item will be added in the subnav of Commerce.
+Add your desired bundles and set the new price.
+Through the plugin settings it is also possible to add custom fields to enhance the user experience of the bundles and provide more information.
+
+### Twig example
+
+The plugin is designed to promote product bundles from within the product detail page.
+When viewing product A, the user may be encouraged in buying a bundle containing product A and product B.
+The Twig example below illustrates how to render bundles in a product detail page:
+
+```
+{# templates/shop/products/_entry.html #}
+
+{% set productBundles = craft.commerceProductBundles.getProductBundles(product) %}
+{% if productBundles|length %}
+    <h3>Bundle tips</h3>
+    {% for productBundle in productBundles %}
+        <form method="POST">
+            {{ csrfInput() }}
+            {{ redirectInput('shop/cart') }}
+            {{ hiddenInput('action', 'commerce/cart/update-cart') }}
+            {{ hiddenInput('qty', 1) }}
+            {{ hiddenInput('purchasableId', productBundle.id) }}
+    
+            <h4>{{ productBundle.title }}</h4>
+    
+            {% for product in productBundle.getProducts() %}
+                <h5>{{ product.title }}</h5>
+
+                {% if product.variants|length > 1 %}
+                    <select name="options[productBundleProducts][]">
+                        {% for purchasable in product.variants %}
+                            <option value="{{ purchasable.id }}">{{ purchasable.description }}</option>
+                        {% endfor %}
+                    </select>
+                {% else %}
+                    {{ hiddenInput('options[productBundleProducts][]', product.variants[0].id) }}
+                {% endif %}
+
+                {% if not loop.last %}
+                    <span>+</span>
+                {% endif %}
+            {% endfor %}
+
+            {{ productBundle.price|commerceCurrency(cart.currency) }}
+            <input type="submit">Add to cart</button>
+        </form>
+    {% endfor %}
+{% endif %}
+```
+
+Make sure to disable product variants if they are out of stock.
+
+---
+
 Brought to you by [TDE](https://www.tde.nl/en)
