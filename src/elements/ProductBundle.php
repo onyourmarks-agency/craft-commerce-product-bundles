@@ -3,8 +3,13 @@
 namespace tde\craft\commerce\bundles\elements;
 
 use craft\commerce\elements\Product;
+use craft\commerce\events\CustomizeProductSnapshotDataEvent;
+use craft\commerce\events\CustomizeProductSnapshotFieldsEvent;
+use craft\commerce\events\CustomizeVariantSnapshotDataEvent;
+use craft\commerce\events\CustomizeVariantSnapshotFieldsEvent;
 use craft\commerce\models\ShippingCategory;
 use craft\commerce\models\TaxCategory;
+use craft\helpers\ArrayHelper;
 use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
 
 use craft\elements\db\ElementQueryInterface;
@@ -32,6 +37,12 @@ use yii\db\Expression;
  */
 class ProductBundle extends Purchasable
 {
+    const EVENT_BEFORE_CAPTURE_PRODUCT_SNAPSHOT = 'beforeCaptureProductSnapshot';
+    const EVENT_AFTER_CAPTURE_PRODUCT_SNAPSHOT = 'afterCaptureProductSnapshot';
+
+    const EVENT_BEFORE_CAPTURE_VARIANT_SNAPSHOT = 'beforeCaptureVariantSnapshot';
+    const EVENT_AFTER_CAPTURE_VARIANT_SNAPSHOT = 'afterCaptureVariantSnapshot';
+
     const STATUS_LIVE = 'live';
     const STATUS_PENDING = 'pending';
     const STATUS_EXPIRED = 'expired';
@@ -318,30 +329,6 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
-    {
-        return UrlHelper::cpUrl('commerce/product-bundles/' . $this->id);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getProduct()
-    {
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFieldLayout()
-    {
-        return \Craft::$app->getFields()->getLayoutByType(self::class);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getUriFormat()
     {
         return null;
@@ -507,8 +494,8 @@ class ProductBundle extends Purchasable
      */
     public function afterOrderComplete(Order $order, LineItem $lineItem)
     {
-        foreach ($this->getProducts() as $product) {
-            $purchasable = CommercePlugin::getInstance()->getVariants()->getVariantById($product['purchasableId']);
+        foreach ($lineItem->snapshot['options']['productBundleProducts'] as $productVariantId) {
+            $purchasable = CommercePlugin::getInstance()->getVariants()->getVariantById($productVariantId);
 
             if ($purchasable->hasUnlimitedStock) {
                 continue;
@@ -518,7 +505,7 @@ class ProductBundle extends Purchasable
             \Craft::$app->getDb()->createCommand()
                 ->update(
                     '{{%commerce_variants}}',
-                    ['stock' => new Expression('stock - :qty', [':qty' => ($lineItem->qty * $product['qty'])])],
+                    ['stock' => new Expression('stock - :qty', [':qty' => ($lineItem->qty)])],
                     ['id' => $purchasable->id])
                 ->execute();
 
@@ -531,6 +518,128 @@ class ProductBundle extends Purchasable
 
             \Craft::$app->getTemplateCaches()->deleteCachesByElementId($this->id);
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function getSnapshot(): array
+    {
+        $data = [];
+        $data['onSale'] = $this->getOnSale();
+        $data['cpEditUrl'] = $this->getCpEditUrl();
+
+        // Default Product custom field handles
+        $productFields = [];
+        $productFieldsEvent = new CustomizeProductSnapshotFieldsEvent([
+            'product' => $this->getProduct(),
+            'fields' => $productFields
+        ]);
+
+        // Allow plugins to modify Product fields to be fetched
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CAPTURE_PRODUCT_SNAPSHOT)) {
+            $this->trigger(self::EVENT_BEFORE_CAPTURE_PRODUCT_SNAPSHOT, $productFieldsEvent);
+        }
+
+        // Product Attributes
+        if ($product = $this->getProduct()) {
+            $productAttributes = $product->attributes();
+
+            // Remove custom fields
+            if (($fieldLayout = $product->getFieldLayout()) !== null) {
+                foreach ($fieldLayout->getFields() as $field) {
+                    ArrayHelper::removeValue($productAttributes, $field->handle);
+                }
+            }
+
+            // Add back the custom fields they want
+            foreach ($productFieldsEvent->fields as $field) {
+                $productAttributes[] = $field;
+            }
+
+            $data['product'] = $this->getProduct()->toArray($productAttributes, [], false);
+
+            $productDataEvent = new CustomizeProductSnapshotDataEvent([
+                'product' => $this->getProduct(),
+                'fieldData' => $data['product']
+            ]);
+        } else {
+            $productDataEvent = new CustomizeProductSnapshotDataEvent([
+                'product' => $this->getProduct(),
+                'fieldData' => []
+            ]);
+        }
+
+        // Allow plugins to modify captured Product data
+        if ($this->hasEventHandlers(self::EVENT_AFTER_CAPTURE_PRODUCT_SNAPSHOT)) {
+            $this->trigger(self::EVENT_AFTER_CAPTURE_PRODUCT_SNAPSHOT, $productDataEvent);
+        }
+
+        $data['product'] = $productDataEvent->fieldData;
+
+        // Default Variant custom field handles
+        $variantFields = [];
+        $variantFieldsEvent = new CustomizeVariantSnapshotFieldsEvent([
+            'variant' => $this,
+            'fields' => $variantFields
+        ]);
+
+        // Allow plugins to modify fields to be fetched
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CAPTURE_VARIANT_SNAPSHOT)) {
+            $this->trigger(self::EVENT_BEFORE_CAPTURE_VARIANT_SNAPSHOT, $variantFieldsEvent);
+        }
+
+        $variantAttributes = $this->attributes();
+
+        // Remove custom fields
+        if (($fieldLayout = $this->getFieldLayout()) !== null) {
+            foreach ($fieldLayout->getFields() as $field) {
+                ArrayHelper::removeValue($variantAttributes, $field->handle);
+            }
+        }
+
+        // Add back the custom fields they want
+        foreach ($variantFieldsEvent->fields as $field) {
+            $variantAttributes[] = $field;
+        }
+
+        $variantData = $this->toArray($variantAttributes, [], false);
+
+        $variantDataEvent = new CustomizeVariantSnapshotDataEvent([
+            'variant' => $this,
+            'fieldData' => $variantData
+        ]);
+
+        // Allow plugins to modify captured Variant data
+        if ($this->hasEventHandlers(self::EVENT_AFTER_CAPTURE_VARIANT_SNAPSHOT)) {
+            $this->trigger(self::EVENT_AFTER_CAPTURE_VARIANT_SNAPSHOT, $variantDataEvent);
+        }
+
+        return array_merge($variantDataEvent->fieldData, $data);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl()
+    {
+        return UrlHelper::cpUrl('commerce/product-bundles/' . $this->id);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getProduct()
+    {
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        return \Craft::$app->getFields()->getLayoutByType(self::class);
     }
 
     /**

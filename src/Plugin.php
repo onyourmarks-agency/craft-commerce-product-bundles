@@ -2,6 +2,7 @@
 
 namespace tde\craft\commerce\bundles;
 
+use craft\commerce\elements\Order;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\UrlHelper;
 use craft\i18n\PhpMessageSource;
