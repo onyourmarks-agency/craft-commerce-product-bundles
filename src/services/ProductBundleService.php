@@ -4,6 +4,8 @@ namespace tde\craft\commerce\bundles\services;
 
 use craft\base\ElementInterface;
 use craft\commerce\elements\Product;
+use craft\commerce\elements\Variant;
+use craft\commerce\models\LineItem;
 use craft\db\Query;
 use craft\errors\ElementNotFoundException;
 use tde\craft\commerce\bundles\elements\ProductBundle;
@@ -103,6 +105,28 @@ class ProductBundleService extends Component
         }
 
         return $productBundles;
+    }
+
+    /**
+     * @param LineItem $lineItem
+     * @return int
+     */
+    public function getOrderableQuantity(LineItem $lineItem)
+    {
+        $orderableQuantity = 9999999999;
+
+        foreach ($lineItem->getOptions()['productBundleProductsVariantIds'] as $variantId) {
+            $variant = Variant::findOne(['id' => $variantId]);
+            if (!$variant->hasUnlimitedStock) {
+                if (is_null($orderableQuantity)) {
+                    $orderableQuantity = $variant->stock;
+                } else if ($variant->stock < $orderableQuantity) {
+                    $orderableQuantity = $variant->stock;
+                }
+            }
+        }
+
+        return $orderableQuantity;
     }
 
     /**

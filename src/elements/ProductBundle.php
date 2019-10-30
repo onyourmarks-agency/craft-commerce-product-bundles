@@ -5,11 +5,8 @@ namespace tde\craft\commerce\bundles\elements;
 use craft\commerce\elements\Product;
 use craft\commerce\events\CustomizeProductSnapshotDataEvent;
 use craft\commerce\events\CustomizeProductSnapshotFieldsEvent;
-use craft\commerce\events\CustomizeVariantSnapshotDataEvent;
-use craft\commerce\events\CustomizeVariantSnapshotFieldsEvent;
 use craft\commerce\models\ShippingCategory;
 use craft\commerce\models\TaxCategory;
-use craft\helpers\ArrayHelper;
 use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
 
 use craft\elements\db\ElementQueryInterface;
@@ -29,6 +26,7 @@ use tde\craft\commerce\bundles\records\ProductBundle as ProductBundleRecord;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+use yii\validators\Validator;
 
 /**
  * Class ProductBundle
@@ -552,6 +550,52 @@ class ProductBundle extends Purchasable
         $data['productId'] = $this->id;
 
         return array_merge($this->getAttributes(), $data);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function getLineItemRules(LineItem $lineItem): array
+    {
+        // After the order is complete shouldn't check things like stock being available or the purchasable being around since they are irrelevant.
+        if ($lineItem->getOrder() && $lineItem->getOrder()->isCompleted) {
+            return [];
+        }
+
+        // an inline validator defined as an anonymous function
+        return [
+            [
+                'purchasableId',
+                function ($attribute, $params, Validator $validator) use ($lineItem) {
+                    if ($lineItem->getPurchasable()->getStatus() != self::STATUS_LIVE) {
+                        $validator->addError($lineItem, $attribute, \Craft::t('commerce', 'The item is not enabled for sale.'));
+                    }
+                }
+            ],
+            [
+                'qty',
+                function ($attribute, $params, Validator $validator) use ($lineItem) {
+                    // no stock at all
+                    if (!$this->hasStock()) {
+                        $error = \Craft::t('commerce', '"{description}" is currently out of stock.', ['description' => $lineItem->purchasable->getDescription()]);
+                        $validator->addError($lineItem, $attribute, $error);
+                    }
+
+                    $orderableQuantity = Plugin::getInstance()->productBundleService->getOrderableQuantity($lineItem);
+
+                    // lineItem qty exceeds the quantity left
+                    if ($this->hasStock() && $lineItem->qty > $orderableQuantity) {
+                        $error = \Craft::t('commerce', 'There are only {num} "{description}" items left in stock.', [
+                            'num' => $orderableQuantity,
+                            'description' => $lineItem->purchasable->getDescription()
+                        ]);
+                        $validator->addError($lineItem, $attribute, $error);
+                    }
+                },
+            ],
+            [['qty'], 'integer', 'min' => 1, 'skipOnError' => false]
+        ];
     }
 
     /**
