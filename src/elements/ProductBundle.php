@@ -442,15 +442,15 @@ class ProductBundle extends Purchasable
     public function hasStock(): bool
     {
         foreach ($this->getProducts() as $product) {
-            $productStock = false;
-
             foreach ($product->getVariants() as $variant) {
-                $productStock = $variant->hasStock() || $variant->hasUnlimitedStock;
+                if ($variant->hasStock() || $variant->hasUnlimitedStock) {
+                    // one of the variants of this product is in stock, continue to next product
+                    continue 2;
+                }
             }
 
-            if (!$productStock) {
-                return false;
-            }
+            // all variants of one of the products is fully out of stock
+            return false;
         }
 
         return true;

@@ -147,7 +147,7 @@ class ProductBundleService extends Component
     protected function isPurchasable(ProductBundle $productBundle)
     {
         // not enabled
-        foreach ($productBundle->getProducts(true) as $product) {
+        foreach ($productBundle->getProducts() as $product) {
             if (!$product->enabled) {
                 return false;
             }
