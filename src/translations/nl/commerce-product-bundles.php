@@ -35,4 +35,6 @@ return [
     'Product bundle saved.' => 'Productbundel opgeslagen',
     'Could not save field layout.' => 'Kon velden niet opslaan',
     'Field layout saved.' => 'Velden opgeslagen',
+    'Commerce product bundle(s)' => 'Commerce productbundels',
+    'Add a product bundle' => 'Voeg een bundel toe',
 ];

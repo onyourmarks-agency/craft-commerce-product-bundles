@@ -2,22 +2,21 @@
 
 namespace tde\craft\commerce\bundles;
 
-use craft\commerce\elements\Order;
 use craft\commerce\elements\Variant;
 use craft\commerce\events\LineItemEvent;
-use craft\commerce\models\LineItem;
 use craft\commerce\services\LineItems;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\UrlHelper;
 use craft\i18n\PhpMessageSource;
+use craft\services\Fields;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
-use tde\craft\commerce\bundles\elements\ProductBundle;
-
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\services\Elements;
 use craft\web\twig\variables\Cp;
+use tde\craft\commerce\bundles\elements\ProductBundle;
+use tde\craft\commerce\bundles\fields\ProductBundleField;
 use tde\craft\commerce\bundles\models\Settings;
 use tde\craft\commerce\bundles\services\ProductBundleService;
 use tde\craft\commerce\bundles\variables\ProductBundlesVariable;
@@ -119,6 +118,14 @@ class Plugin extends \craft\base\Plugin
                     $variant = Variant::findOne(['id' => $variantId]);
                     $lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantMeta'][] = $variant->getSnapshot();
                 }
+            }
+        );
+
+        Event::on(
+            Fields::class,
+            Fields::EVENT_REGISTER_FIELD_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = ProductBundleField::class;
             }
         );
     }

@@ -35,4 +35,6 @@ return [
     'Product bundle saved.' => 'Product bundle saved.',
     'Could not save field layout.' => 'Could not save field layout.',
     'Field layout saved.' => 'Field layout saved.',
+    'Commerce product bundle(s)' => 'Commerce product bundle(s)',
+    'Add a product bundle' => 'Add a product bundle',
 ];
