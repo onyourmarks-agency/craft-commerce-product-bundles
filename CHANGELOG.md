@@ -1,5 +1,11 @@
 # Release Notes for `tde/commerce-product-bundles`
 
+## 1.0.3 - 2020-02-17
+
+### New features
+
+- Adding custom field type
+
 ## 1.0.2 - 2019-12-16
 
 ### Fixes

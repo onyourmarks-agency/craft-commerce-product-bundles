@@ -93,6 +93,10 @@ The Twig example below illustrates how to render bundles in a product detail pag
 
 Make sure to disable product variants if they are out of stock.
 
+### Field type
+
+Since 1.0.3 there is also a custom field type available to add product bundles directly into your content.
+
 ---
 
 Brought to you by [TDE](https://www.tde.nl/en)
