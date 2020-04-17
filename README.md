@@ -1,4 +1,4 @@
-# Bundles Plugin for [Craft CMS 3](https://craftcms.com/) with [Craft Commerce 2](https://craftcms.com/commerce)
+# Bundles Plugin for [Craft CMS 3](https://craftcms.com/) with [Craft Commerce 2 & 3](https://craftcms.com/commerce)
 
 Combine multiple products into a purchasable bundle to sell these for a special price. 
 Thanks to the inspiration coming from the existing [Commerce Bundles](https://plugins.craftcms.com/commerce-bundles) plugin, this plugin allows you to create bundles from products and not just their variants.
@@ -8,7 +8,7 @@ Users can now order bundles and choose their desired variant, eg. shirt size M w
 
 This plugin requires:
 * Craft CMS 3.2 or later
-* Craft Commerce 2.1 or later
+* Craft Commerce 2.1, 3.1 or later
 
 ## Installation
 

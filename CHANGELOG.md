@@ -1,5 +1,11 @@
 # Release Notes for `tde/commerce-product-bundles`
 
+## 1.1.0 - 2020-04-17
+
+### New features
+
+- Tested & added support for Commerce 3
+
 ## 1.0.3 - 2020-02-17
 
 ### New features
