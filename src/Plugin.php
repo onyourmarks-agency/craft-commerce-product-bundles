@@ -139,24 +139,26 @@ class Plugin extends \craft\base\Plugin
             Cp::class,
             Cp::EVENT_REGISTER_CP_NAV_ITEMS,
             function(RegisterCpNavItemsEvent $event) {
-                if (isset($event->navItems['commerce'])) {
-                    $keys = array_keys($event->navItems['commerce']['subnav']);
-                    $pos = array_search('products', $keys) + 1;
+                foreach ($event->navItems as $navKey => $navItem) {
+                    if ($navItem['url'] === 'commerce') {
+                        $keys = array_keys($event->navItems[$navKey]['subnav']);
+                        $pos = array_search('products', $keys) + 1;
 
-                    $event->navItems['commerce']['subnav'] = array_merge(
-                        array_slice(
-                            $event->navItems['commerce']['subnav'],
-                            0,
-                            $pos
-                        ),
-                        [
-                            'product-bundles' => [
-                                'label' => 'Product bundles',
-                                'url' => 'commerce/product-bundles',
-                            ]
-                        ],
-                        array_slice($event->navItems['commerce']['subnav'], $pos)
-                    );
+                        $event->navItems[$navKey]['subnav'] = array_merge(
+                            array_slice(
+                                $event->navItems[$navKey]['subnav'],
+                                0,
+                                $pos
+                            ),
+                            [
+                                'product-bundles' => [
+                                    'label' => 'Product bundles',
+                                    'url' => 'commerce/product-bundles',
+                                ]
+                            ],
+                            array_slice($event->navItems[$navKey]['subnav'], $pos)
+                        );
+                    }
                 }
             }
         );
