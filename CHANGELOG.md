@@ -1,5 +1,17 @@
 # Release Notes for `tde/commerce-product-bundles`
 
+## 1.1.2 - 2020-10-28
+
+### Fixes
+
+- Fixed a bug where an error would occur if the product bundle was disabled.
+
+## 1.1.1 - 2020-05-14
+
+### Fixes
+
+- Fixed the RegisterCpNavItemsEvent as the plugin was not showing up in the nav items anymore. (#6)
+
 ## 1.1.0 - 2020-04-17
 
 ### New features

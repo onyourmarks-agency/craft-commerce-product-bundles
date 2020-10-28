@@ -99,7 +99,8 @@ class ProductBundleService extends Component
         $productBundles = [];
         foreach ($productBundleIds as $productBundleId) {
             $productBundle = ProductBundle::findOne(['id' => $productBundleId]);
-            if ($this->isPurchasable($productBundle)) {
+
+            if ($productBundle && $this->isPurchasable($productBundle)) {
                 $productBundles[] = $productBundle;
             }
         }
