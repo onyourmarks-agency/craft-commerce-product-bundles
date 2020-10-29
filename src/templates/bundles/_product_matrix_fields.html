@@ -1,0 +1,25 @@
+{%- import '_includes/forms' as forms -%}
+
+<div class="product-properties">
+	{% namespace namespace %}
+		{{ forms.elementSelectField({
+			id: 'product',
+			name: 'product',
+			label: 'Product'|t('commerce-product-bundles'),
+			elements: product is defined ? [product.product] : [],
+			elementType: productElementType,
+			limit: 1,
+			errors: productBundle.getErrors('products'),
+			required: true
+		}) }}
+		
+		{{ forms.textField({
+			id: 'qty',
+			name: 'qty',
+			label: 'Quantity'|t('commerce-product-bundles'),
+			instructions: 'Enter the quantity for this product, 1 or more is required.'|t('commerce-product-bundles'),
+			value: product is defined ? product.qty : 1,
+			required: true
+		}) }}
+	{% endnamespace %}
+</div>

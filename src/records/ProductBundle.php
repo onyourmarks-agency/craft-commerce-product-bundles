@@ -23,22 +23,6 @@ class ProductBundle extends ActiveRecord
     /**
      * @return ActiveQueryInterface
      */
-    public function getTaxCategory(): ActiveQueryInterface
-    {
-        return $this->hasOne(TaxCategory::class, ['id' => 'taxCategoryId']);
-    }
-
-    /**
-     * @return ActiveQueryInterface
-     */
-    public function getShippingCategory(): ActiveQueryInterface
-    {
-        return $this->hasOne(ShippingCategory::class, ['id' => 'shippingCategoryId']);
-    }
-
-    /**
-     * @return ActiveQueryInterface
-     */
     public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);

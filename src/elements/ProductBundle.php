@@ -2,25 +2,24 @@
 
 namespace tde\craft\commerce\bundles\elements;
 
+use craft\commerce\base\Purchasable;
+use craft\commerce\elements\Order;
 use craft\commerce\elements\Product;
 use craft\commerce\events\CustomizeProductSnapshotDataEvent;
 use craft\commerce\events\CustomizeProductSnapshotFieldsEvent;
+use craft\commerce\models\LineItem;
 use craft\commerce\models\ShippingCategory;
 use craft\commerce\models\TaxCategory;
-use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
-
-use craft\elements\db\ElementQueryInterface;
+use craft\commerce\Plugin as CommercePlugin;
 use craft\db\Query;
 use craft\elements\actions\Delete;
+use craft\elements\db\ElementQueryInterface;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayoutTab;
 use craft\validators\DateTimeValidator;
-
-use craft\commerce\Plugin as CommercePlugin;
-use craft\commerce\base\Purchasable;
-use craft\commerce\elements\Order;
-use craft\commerce\models\LineItem;
-
+use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
+use tde\craft\commerce\bundles\fieldlayoutelements\ProductField;
 use tde\craft\commerce\bundles\Plugin;
 use tde\craft\commerce\bundles\records\ProductBundle as ProductBundleRecord;
 use yii\base\Exception;
@@ -48,16 +47,6 @@ class ProductBundle extends Purchasable
     public $id;
 
     /**
-     * @var int
-     */
-    public $taxCategoryId;
-
-    /**
-     * @var int
-     */
-    public $shippingCategoryId;
-
-    /**
      * @var \DateTime
      */
     public $postDate;
@@ -78,7 +67,7 @@ class ProductBundle extends Purchasable
     public $price;
 
     /**
-     * @var Product[]
+     * @var array
      */
     protected $_products;
 
@@ -143,15 +132,13 @@ class ProductBundle extends Purchasable
      */
     public static function defineSources(string $context = null): array
     {
-        $sources = [
+        return [
             [
                 'key' => '*',
                 'label' => \Craft::t('commerce-product-bundles', 'All bundles'),
                 'defaultSort' => ['title', 'ASC']
             ]
         ];
-
-        return $sources;
     }
 
     /**
@@ -360,8 +347,6 @@ class ProductBundle extends Purchasable
 
         $record->postDate = $this->postDate;
         $record->expiryDate = $this->expiryDate;
-        $record->taxCategoryId = $this->taxCategoryId;
-        $record->shippingCategoryId = $this->shippingCategoryId;
         $record->price = $this->price;
         $record->sku = $this->sku;
 
@@ -400,22 +385,6 @@ class ProductBundle extends Purchasable
     public function getDescription(): string
     {
         return $this->title;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getTaxCategoryId(): int
-    {
-        return $this->taxCategoryId;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getShippingCategoryId(): int
-    {
-        return $this->shippingCategoryId;
     }
 
     /**
@@ -469,15 +438,18 @@ class ProductBundle extends Purchasable
     }
 
     /**
-     * @param $products
+     * @param array $products
      */
-    public function setProducts($products)
+    public function setProducts(array $products)
     {
         $this->_products = [];
 
         if (is_array($products)) {
             foreach ($products as $product) {
-                $this->_products[] = CommercePlugin::getInstance()->getProducts()->getProductById($product);
+                $this->_products[] = [
+                    'product' => CommercePlugin::getInstance()->getProducts()->getProductById($product['product'][0]),
+                    'qty' => $product['qty'],
+                ];
             }
         }
     }
@@ -619,7 +591,21 @@ class ProductBundle extends Purchasable
      */
     public function getFieldLayout()
     {
-        return \Craft::$app->getFields()->getLayoutByType(self::class);
+        $fieldLayout = \Craft::$app->getFields()->getLayoutByType(self::class);
+
+        $layoutTabs = $fieldLayout->getTabs();
+        $layoutTabs[] = new FieldLayoutTab([
+            'name' => \Craft::t('commerce-product-bundles', 'Products'),
+            'elements' => [
+                [
+                    'type' => ProductField::class,
+                ],
+            ],
+        ]);
+
+        $fieldLayout->setTabs($layoutTabs);
+
+        return $fieldLayout;
     }
 
     /**
@@ -647,29 +633,5 @@ class ProductBundle extends Purchasable
             default:
                 return parent::tableAttributeHtml($attribute);
         }
-    }
-
-    /**
-     * @return TaxCategory|null
-     */
-    public function getTaxCategory()
-    {
-        if ($this->taxCategoryId) {
-            return CommercePlugin::getInstance()->getTaxCategories()->getTaxCategoryById($this->taxCategoryId);
-        }
-
-        return null;
-    }
-
-    /**
-     * @return ShippingCategory|null
-     */
-    public function getShippingCategory()
-    {
-        if ($this->shippingCategoryId) {
-            return CommercePlugin::getInstance()->getShippingCategories()->getShippingCategoryById($this->shippingCategoryId);
-        }
-
-        return null;
     }
 }

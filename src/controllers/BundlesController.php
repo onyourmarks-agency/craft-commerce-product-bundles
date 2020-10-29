@@ -43,8 +43,10 @@ class BundlesController extends Controller
      * @param int|null $productBundleId
      * @param ProductBundle|null $productBundle
      * @param array $variables
+     *
      * @return Response
      * @throws BadRequestHttpException
+     * @throws InvalidConfigException
      * @throws NotFoundHttpException
      */
     public function actionEdit(int $productBundleId = null, ProductBundle $productBundle = null, array $variables = []): Response
@@ -59,12 +61,10 @@ class BundlesController extends Controller
             $productBundle = $productBundle ?? new ProductBundle();
         }
 
-        return $this->renderTemplate('commerce-product-bundles/bundles/_edit', [
-            'productBundle' => $productBundle,
-            'productElementType' => Product::class,
-            'siteIds' => \Craft::$app->getSites()->getAllSiteIds(),
-            'enabledSiteIds' => \Craft::$app->getSites()->getAllSiteIds(),
-        ]);
+        $variables['productBundle'] = $productBundle;
+        $this->_prepVariables($variables);
+
+        return $this->renderTemplate('commerce-product-bundles/bundles/_edit', $variables);
     }
 
     /**
@@ -107,9 +107,6 @@ class BundlesController extends Controller
         $productBundle->enabled = (bool) $request->getBodyParam('enabled');
         $productBundle->enabledForSite = (bool) $request->getBodyParam('enabledForSite', $productBundle->enabledForSite);
 
-        $productBundle->taxCategoryId = $request->getBodyParam('taxCategoryId');
-        $productBundle->shippingCategoryId = $request->getBodyParam('shippingCategoryId');
-
         $productBundle->price = Localization::normalizeNumber($request->getBodyParam('price'));
         $productBundle->sku = $request->getBodyParam('sku');
 
@@ -126,5 +123,25 @@ class BundlesController extends Controller
         \Craft::$app->getSession()->setNotice(\Craft::t('commerce-product-bundles', 'Product bundle saved.'));
 
         return $this->redirectToPostedUrl($productBundle);
+    }
+
+    /**
+     * @param array $variables
+     * @throws InvalidConfigException
+     */
+    private function _prepVariables(array &$variables)
+    {
+        $variables['tabs'] = [];
+
+        /** @var ProductBundle $productBundle */
+        $productBundle = $variables['productBundle'];
+
+        $form = $productBundle->getFieldLayout()->createForm($productBundle);
+        $variables['tabs'] = $form->getTabMenu();
+        $variables['fieldsHtml'] = $form->render();
+
+        $variables['productElementType'] = Product::class;
+        $variables['siteIds'] = \Craft::$app->getSites()->getAllSiteIds();
+        $variables['enabledSiteIds'] = \Craft::$app->getSites()->getAllSiteIds();
     }
 }

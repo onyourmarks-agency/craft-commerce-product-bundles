@@ -56,7 +56,8 @@ class ProductBundleService extends Component
         foreach ($productBundle->getProducts() as $product) {
             $productBundleProduct = new ProductBundleProduct();
             $productBundleProduct->setProductBundle($productBundle);
-            $productBundleProduct->setProduct($product);
+            $productBundleProduct->setProduct($product['product']);
+            $productBundleProduct->setQty($product['qty']);
 
             if (!$productBundleProduct->toRecord()->save()) {
                 return false;
@@ -69,7 +70,7 @@ class ProductBundleService extends Component
     /**
      * @param ProductBundle $productBundle
      *
-     * @return Product[]
+     * @return array
      */
     public function getProductsForBundle(ProductBundle $productBundle)
     {
@@ -78,7 +79,10 @@ class ProductBundleService extends Component
             ->all();
 
         return array_map(function (ProductBundleProductRecord $record) {
-            return $record->getProduct();
+            return [
+                'product' => $record->getProduct(),
+                'qty' => $record->getQty(),
+            ];
         }, $records);
     }
 

@@ -40,50 +40,22 @@
     {{ redirectInput('commerce/product-bundles') }}
     {{ csrfInput() }}
 
-    <div id="fields">
-        {{ forms.textField({
-            label: 'Title'|t('commerce-product-bundles'),
-            site: productBundle.site,
-            id: 'title',
-            name: 'title',
-            value: productBundle.title,
-            errors: productBundle.getErrors('title'),
-            first: true,
-            autofocus: true,
-            required: true,
-            maxlength: 255
-        }) }}
-
-        {{ forms.elementSelectField({
-            id: 'products',
-            label: 'Products'|t('commerce-product-bundles'),
-            name: 'products',
-            elements: productBundle.getProducts(),
-            elementType: productElementType,
-            limit: null,
-            instructions: 'Select two or more products to combine in this bundle.'|t('commerce-product-bundles'),
-            errors: productBundle.getErrors('products'),
-            required: true
-        }) }}
-
-        {% set tabs = productBundle.getFieldLayout().getTabs() %}
-        {% if tabs|length %}
-            <hr>
-            <div>
-                {% for tab in tabs %}
-                    {% if tabs|length > 1 %}
-                        <h2>{{ tab.name }}</h2>
-                    {% endif %}
-                    <div>
-                        {% include '_includes/fields' with {
-                            fields: tab.getFields(),
-                            element: productBundle,
-                        } only %}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
+	{{ forms.textField({
+		label: 'Title'|t('commerce-product-bundles'),
+		site: productBundle.site,
+		id: 'title',
+		name: 'title',
+		value: productBundle.title,
+		errors: productBundle.getErrors('title'),
+		first: true,
+		autofocus: true,
+		required: true,
+		maxlength: 255
+	}) }}
+	
+	<div id="fields">
+		{{ fieldsHtml|raw }}
+	</div>
 {% endblock %}
 
 {% block details %}
@@ -120,33 +92,6 @@
             }) }}
         {% endif %}
     </div>
-
-    <hr>
-
-    <div class="meta">
-        {{ forms.selectField({
-            label: 'Tax Category'|t('commerce-product-bundles'),
-            name: 'taxCategoryId',
-            value: productBundle.taxCategoryId,
-            required: true,
-            options: craft.commerce.taxCategories.getAllTaxCategoriesAsList()
-        }) }}
-
-        {% set shippingCategories = [] %}
-        {% for shippingCategory in craft.commerce.shippingCategories.getAllShippingCategories() %}
-            {% set shippingCategories = shippingCategories|merge([{ value: shippingCategory.id, label: shippingCategory.name }]) %}
-        {% endfor %}
-
-        {{ forms.selectField({
-            label: 'Shipping Category'|t('commerce-product-bundles'),
-            name: 'shippingCategoryId',
-            value: productBundle.shippingCategoryId,
-            required: true,
-            options: shippingCategories
-        }) }}
-    </div>
-
-    <hr>
 
     <div class="meta">
         {{ forms.textField({
