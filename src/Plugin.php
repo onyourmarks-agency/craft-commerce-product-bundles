@@ -15,6 +15,7 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\services\Elements;
 use craft\web\twig\variables\Cp;
+use tde\craft\commerce\bundles\behaviors\ProductBundleBehavior;
 use tde\craft\commerce\bundles\elements\ProductBundle;
 use tde\craft\commerce\bundles\fields\ProductBundleField;
 use tde\craft\commerce\bundles\models\Settings;
@@ -101,6 +102,9 @@ class Plugin extends \craft\base\Plugin
                 /** @var CraftVariable $variable */
                 $variable = $e->sender;
                 $variable->set('commerceProductBundles', ProductBundlesVariable::class);
+                $variable->attachBehaviors([
+                    ProductBundleBehavior::class,
+                ]);
             }
         );
 
@@ -174,9 +178,11 @@ class Plugin extends \craft\base\Plugin
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules = array_merge($event->rules, [
-                    'commerce/product-bundles' => 'commerce-product-bundles/bundles/index',
-                    'commerce/product-bundles/new' => 'commerce-product-bundles/bundles/edit',
-                    'commerce/product-bundles/<productBundleId:\d+>' => 'commerce-product-bundles/bundles/edit',
+                    'commerce/product-bundles' => 'commerce-product-bundles/product-bundles/index',
+                    'commerce/product-bundles/new' => 'commerce-product-bundles/product-bundles/edit',
+                    'commerce/product-bundles/new/<siteHandle:{handle}>' => 'commerce-product-bundles/product-bundles/edit',
+                    'commerce/product-bundles/<productBundleId:\d+>' => 'commerce-product-bundles/product-bundles/edit',
+                    'commerce/product-bundles/<productBundleId:\d+>/<siteHandle:{handle}>' => 'commerce-product-bundles/product-bundles/edit',
                     'commerce/product-bundles/settings' => 'commerce-product-bundles/settings',
                 ]);
             }

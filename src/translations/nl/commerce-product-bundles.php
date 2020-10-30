@@ -24,17 +24,44 @@ return [
     'Select two or more products to combine in this bundle.' => 'Kies twee of meer producten om te combineren in deze bundel.',
     'Enabled' => 'Ingeschakeld',
     'Enabled for site' => 'Ingeschakeld voor deze site',
-    'Tax Category' => 'Belastingcategorie',
-    'Shipping Category' => 'Verzendcategorie',
     'Enter SKU' => 'SKU invullen',
     'Enter price' => 'Prijs invullen',
     'Date Created' => 'Datum aangemaakt',
     'Date Updated' => 'Datum aangepast',
-    'No product bundle with the ID “{id}”' => 'Productbundel met ID “{id}” kon niet gevonden worden',
     'Couldn’t save product bundle.' => 'Kon productbundel niet opslaan',
     'Product bundle saved.' => 'Productbundel opgeslagen',
     'Could not save field layout.' => 'Kon velden niet opslaan',
     'Field layout saved.' => 'Velden opgeslagen',
     'Commerce product bundle(s)' => 'Commerce productbundels',
     'Add a product bundle' => 'Voeg een bundel toe',
+
+    // product matrix
+    'Product' => 'Product',
+    'Enter the quantity for this product, 1 or more is required.' => 'Vul een aantal voor dit product in, minimaal 1 is verplicht.',
+    'Quantity' => 'Aantal',
+    'Select' => 'Selecteer',
+    'Actions' => 'Acties',
+    'Collapse' => 'Inklappen',
+    'Expand' => 'Uitklappen',
+    'Add product above' => 'Voeg product hierboven toe',
+    'Add a product' => 'Voeg product toe',
+    'Delete' => 'Verwijderen',
+    'Reorder' => 'Rangschikken',
+    'Are you sure you want to delete the selected products?' => 'Weet je zeker dat je de geselecteerde producten wilt verwijderen?',
+
+    // settings
+    'Couldn’t save settings.' => 'Instellingen konden niet opgeslagen worden.',
+    'Settings saved.' => 'Instellingen opslagen.',
+
+    // product bundle
+    'URI' => 'URI',
+    'Link' => 'Link',
+    'Slug' => 'Slug',
+    'Enter slug' => 'Voer slug in',
+    'The item is not enabled for sale.' => 'Dit item niet ingeschakeld voor sale.',
+    '"{description}" is currently out of stock.' => '"{description}" is momenteel niet op voorraad.',
+    'There are only {num} "{description}" items left in stock.' => 'Er is slechts {num} van "{description}" op voorraad.',
+
+    // exceptions
+    'No product bundle with the ID “{id}”' => 'Productbundel met ID “{id}” kon niet gevonden worden',
 ];

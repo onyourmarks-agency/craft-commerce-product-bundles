@@ -1,0 +1,10 @@
+{% extends '_layouts/elementindex' %}
+
+{% set title = 'Product bundles'|t('commerce-product-bundles') %}
+{% set elementType = 'tde\\craft\\commerce\\bundles\\elements\\ProductBundle' %}
+{% set selectedSubnavItem = 'product-bundles' %}
+
+{% set crumbs = [
+	{ label: "Commerce"|t('commerce'), url: url('commerce') },
+	{ label: "Product bundles"|t('commerce-product-bundles'), url: url('commerce/product-bundles') },
+] %}

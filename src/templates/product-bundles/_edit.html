@@ -6,6 +6,32 @@
 {% set selectedSubnavItem = 'product-bundles' %}
 {% set fullPageForm = true %}
 
+{% set crumbs = [
+	{ label: "Commerce"|t('commerce'), url: url('commerce') },
+	{ label: "Product bundles"|t('commerce-product-bundles'), url: url('commerce/product-bundles') },
+] %}
+
+{% block header %}
+	<div class="flex flex-nowrap">
+		{{ block('pageTitle') }}
+		{{ block('contextMenu') }}
+	</div>
+	<div class="flex">
+		{% if showPreviewBtn or shareUrl is defined %}
+			<div class="btngroup">
+				{% if showPreviewBtn %}
+					<div id="preview-btn" class="btn livepreviewbtn">{{ 'Preview'|t('app') }}</div>
+				{% endif %}
+				{% if shareUrl is defined %}
+					<a id="share-btn" href="{{ shareUrl }}" class="btn sharebtn" target="_blank">{{ 'Share'|t('app') }}</a>
+				{% endif %}
+			</div>
+		{% endif %}
+		
+		{{ block('actionButton') }}
+	</div>
+{% endblock %}
+
 {% block contextMenu %}
     {% if craft.app.getIsMultiSite() %}
         <div class="btn menubtn" data-icon="world">{{ productBundle.site.name|t('site') }}</div>
@@ -34,7 +60,7 @@
 {% endblock %}
 
 {% block content %}
-    {{ actionInput('commerce-product-bundles/bundles/save') }}
+    {{ actionInput('commerce-product-bundles/product-bundles/save') }}
     {{ hiddenInput('productBundleId', productBundle.id) }}
     {{ hiddenInput('siteId', productBundle.siteId) }}
     {{ redirectInput('commerce/product-bundles') }}
@@ -60,6 +86,16 @@
 
 {% block details %}
     <div class="meta">
+		{{ forms.textField({
+			label: "Slug"|t('commerce-product-bundles'),
+			site: productBundle.site,
+			id: 'slug',
+			name: 'slug',
+			value: productBundle.slug,
+			placeholder: 'Enter slug'|t('commerce-product-bundles'),
+			errors: productBundle.getErrors('slug')|merge(productBundle.getErrors('uri'))
+		}) }}
+		
         {{ forms.dateTimeField({
             label: 'Post Date'|t('commerce-product-bundles'),
             id: 'postDate',

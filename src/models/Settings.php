@@ -19,6 +19,11 @@ class Settings extends Model
     public $fieldLayoutId;
 
     /**
+     * @var array
+     */
+    public $siteSettings;
+
+    /**
      * @inheritDoc
      */
     public function getFieldLayout(): FieldLayout

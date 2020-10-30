@@ -5,6 +5,7 @@ namespace tde\craft\commerce\bundles\controllers;
 use craft\errors\MissingComponentException;
 use craft\web\Controller;
 use tde\craft\commerce\bundles\elements\ProductBundle;
+use tde\craft\commerce\bundles\models\Settings;
 use tde\craft\commerce\bundles\Plugin;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
@@ -26,8 +27,12 @@ class SettingsController extends Controller
     {
         $this->requireCpRequest();
 
+        /** @var Settings $settings */
+        $settings = Plugin::$instance->getSettings();
+
         return $this->renderTemplate('commerce-product-bundles/settings', [
-            'fieldLayout' => \Craft::$app->getFields()->getLayoutByType(ProductBundle::class)
+            'siteSettings' => $settings->siteSettings,
+            'fieldLayout' => \Craft::$app->getFields()->getLayoutById($settings->fieldLayoutId),
         ]);
     }
 
@@ -42,9 +47,25 @@ class SettingsController extends Controller
         $this->requireCpRequest();
         $this->requirePostRequest();
 
+        /** @var Settings $settings */
         $settings = Plugin::$instance->getSettings();
 
-        // Set the variant field layout
+        // Site-specific settings
+        $siteSettings = [];
+        foreach (\Craft::$app->getSites()->getAllSites() as $site) {
+            $postedSettings = \Craft::$app->getRequest()->getBodyParam('sites.' . $site->handle);
+
+            if (!empty($postedSettings['uriFormat'])) {
+                $siteSettings[$site->id] = [
+                    'uriFormat' => $postedSettings['uriFormat'],
+                    'template' => $postedSettings['template'],
+                ];
+            }
+        }
+
+        $settings->siteSettings = $siteSettings;
+
+        // Set the bundle field layout
         $fieldLayout = \Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = ProductBundle::class;
 
@@ -54,7 +75,24 @@ class SettingsController extends Controller
             return null;
         }
 
-        \Craft::$app->getSession()->setNotice(\Craft::t('commerce-product-bundles', 'Field layout saved.'));
+        $settings->fieldLayoutId = $fieldLayout->id;
+
+        // validate
+        if (!$settings->validate()) {
+            \Craft::$app->getSession()->setError(\Craft::t('commerce-product-bundles', 'Couldn’t save settings.'));
+
+            return null;
+        }
+
+        // save
+        $pluginSettingsSaved = \Craft::$app->getPlugins()->savePluginSettings(Plugin::getInstance(), $settings->toArray());
+        if (!$pluginSettingsSaved) {
+            \Craft::$app->getSession()->setError(\Craft::t('commerce-product-bundles', 'Couldn’t save settings.'));
+
+            return null;
+        }
+
+        \Craft::$app->getSession()->setNotice(\Craft::t('commerce-product-bundles', 'Settings saved.'));
 
         return $this->redirectToPostedUrl($settings);
     }

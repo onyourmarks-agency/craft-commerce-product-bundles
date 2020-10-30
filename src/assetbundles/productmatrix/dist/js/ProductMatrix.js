@@ -11,14 +11,14 @@
             inputNamePrefix: null,
             inputIdPrefix: null,
 
-          $container: null,
-            $variantContainer: null,
-            $addVariantBtn: null,
+            $container: null,
+            $productContainer: null,
+            $addProductBtn: null,
 
-            variantSort: null,
-            variantSelect: null,
-            defaultVariant: null,
-            totalNewVariants: 0,
+            productSort: null,
+            productSelect: null,
+            defaultProduct: null,
+            totalNewProducts: 0,
             singleColumnMode: false,
 
             init: function(id, fieldBodyHtml, fieldFootHtml, inputNamePrefix) {
@@ -29,22 +29,22 @@
                 this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
 
                 this.$container = $('#' + this.id);
-                this.$variantContainer = this.$container.children('.blocks');
-                this.$addVariantBtn = this.$container.children('.btn');
+                this.$productContainer = this.$container.children('.blocks');
+                this.$addProductBtn = this.$container.children('.btn');
 
-                var $variants = this.$variantContainer.children(),
-                    collapsedVariants = Craft.Bundles.ProductMatrix.getCollapsedVariantIds();
+                var $products = this.$productContainer.children(),
+                    collapsedProducts = Craft.Bundles.ProductMatrix.getCollapsedProductIds();
 
-                this.variantSort = new Garnish.DragSort($variants, {
+                this.productSort = new Garnish.DragSort($products, {
                     handle: '> .actions > .move',
                     axis: 'y',
                     filter: $.proxy(function() {
                         // Only return all the selected items if the target item is selected
-                        if (this.variantSort.$targetItem.hasClass('sel')) {
-                            return this.variantSelect.getSelectedItems();
+                        if (this.productSort.$targetItem.hasClass('sel')) {
+                            return this.productSelect.getSelectedItems();
                         }
                         else {
-                            return this.variantSort.$targetItem;
+                            return this.productSort.$targetItem;
                         }
                     }, this),
                     collapseDraggees: true,
@@ -52,40 +52,40 @@
                     helperLagBase: 1.5,
                     helperOpacity: 0.9,
                     onSortChange: $.proxy(function() {
-                        this.variantSelect.resetItemOrder();
+                        this.productSelect.resetItemOrder();
                     }, this)
                 });
 
-                this.variantSelect = new Garnish.Select(this.$variantContainer, $variants, {
+                this.productSelect = new Garnish.Select(this.$productContainer, $products, {
                     multi: true,
                     vertical: true,
                     handle: '> .checkbox, > .titlebar',
                     checkboxMode: true
                 });
 
-                for (var i = 0; i < $variants.length; i++) {
-                    var $variant = $variants.eq(i),
-                        id = $variant.data('id');
+                for (var i = 0; i < $products.length; i++) {
+                    var $product = $products.eq(i),
+                        id = $product.data('id');
 
-                    // Is this a new variant?
+                    // Is this a new product?
                     var newMatch = (typeof id === 'string' && id.match(/new(\d+)/));
 
-                    if (newMatch && newMatch[1] > this.totalNewVariants) {
-                        this.totalNewVariants = parseInt(newMatch[1]);
+                    if (newMatch && newMatch[1] > this.totalNewProducts) {
+                        this.totalNewProducts = parseInt(newMatch[1]);
                     }
 
-                    var variant = new Variant(this, $variant);
+                    var product = new Product(this, $product);
 
-                    if (variant.id && $.inArray('' + variant.id, collapsedVariants) !== -1) {
-                        variant.collapse();
+                    if (product.id && $.inArray('' + product.id, collapsedProducts) !== -1) {
+                        product.collapse();
                     }
 
                     // Init the unlimited stock checkbox
-                    Craft.Commerce.initUnlimitedStockCheckbox($variant);
+                    Craft.Commerce.initUnlimitedStockCheckbox($product);
                 }
 
-                this.addListener(this.$addVariantBtn, 'click', function() {
-                    this.addVariant();
+                this.addListener(this.$addProductBtn, 'click', function() {
+                    this.addProduct();
                 });
 
                 this.addListener(this.$container, 'resize', 'handleContainerResize');
@@ -96,63 +96,57 @@
                 }
             },
 
-            setDefaultVariant: function(variant) {
-                if (this.defaultVariant) {
-                    this.defaultVariant.unsetAsDefault();
+            setDefaultProduct: function(product) {
+                if (this.defaultProduct) {
+                    this.defaultProduct.unsetAsDefault();
                 }
 
-                variant.setAsDefault();
-                this.defaultVariant = variant;
+                product.setAsDefault();
+                this.defaultProduct = product;
             },
 
-            addVariant: function($insertBefore) {
-                this.totalNewVariants++;
+            addProduct: function($insertBefore) {
+                this.totalNewProducts++;
 
-                var id = 'new' + this.totalNewVariants;
+                var id = 'new' + this.totalNewProducts;
 
-                var $variant = $(
-                    '<div class="variant-matrixblock matrixblock" data-id="' + id + '">' +
-                    '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][enabled]" value="1"/>' +
-                    '<input class="default-input" type="hidden" name="' + this.inputNamePrefix + '[' + id + '][isDefault]" value="">' +
+                var $product = $(
+                    '<div class="product-matrixblock matrixblock" data-id="' + id + '">' +
                     '<div class="titlebar">' +
                     '<div class="preview"></div>' +
                     '</div>' +
-                    '<div class="checkbox" title="' + Craft.t('commerce', 'Select') + '"></div>' +
+                    '<div class="checkbox" title="' + Craft.t('commerce-product-bundles', 'Select') + '"></div>' +
                     '<div class="actions">' +
-                    '<div class="status off" title="' + Craft.t('commerce', 'Disabled') + '"></div>' +
-                    '<a class="default-btn" title="' + Craft.t('commerce', 'Set as the default variant') + '">' + Craft.t('commerce', 'Default') + '</a> ' +
-                    '<a class="settings icon menubtn" title="' + Craft.t('commerce', 'Actions') + '" role="button"></a> ' +
+                    '<a class="settings icon menubtn" title="' + Craft.t('commerce-product-bundles', 'Actions') + '" role="button"></a> ' +
                     '<div class="menu">' +
                     '<ul class="padded">' +
-                    '<li><a data-icon="collapse" data-action="collapse">' + Craft.t('commerce', 'Collapse') + '</a></li>' +
-                    '<li class="hidden"><a data-icon="expand" data-action="expand">' + Craft.t('commerce', 'Expand') + '</a></li>' +
-                    '<li><a data-icon="disabled" data-action="disable">' + Craft.t('commerce', 'Disable') + '</a></li>' +
-                    '<li class="hidden"><a data-icon="enabled" data-action="enable">' + Craft.t('commerce', 'Enable') + '</a></li>' +
+                    '<li><a data-icon="collapse" data-action="collapse">' + Craft.t('commerce-product-bundles', 'Collapse') + '</a></li>' +
+                    '<li class="hidden"><a data-icon="expand" data-action="expand">' + Craft.t('commerce-product-bundles', 'Expand') + '</a></li>' +
                     '</ul>' +
                     '<hr class="padded"/>' +
                     '<ul class="padded">' +
-                    '<li><a data-icon="+" data-action="add">' + Craft.t('commerce', 'Add variant above') + '</a></li>' +
+                    '<li><a data-icon="+" data-action="add">' + Craft.t('commerce-product-bundles', 'Add product above') + '</a></li>' +
                     '</ul>' +
                     '<hr class="padded"/>' +
                     '<ul class="padded">' +
-                    '<li><a data-icon="remove" data-action="delete">' + Craft.t('commerce', 'Delete') + '</a></li>' +
+                    '<li><a data-icon="remove" data-action="delete">' + Craft.t('commerce-product-bundles', 'Delete') + '</a></li>' +
                     '</ul>' +
                     '</div>' +
-                    '<a class="move icon" title="' + Craft.t('commerce', 'Reorder') + '" role="button"></a> ' +
+                    '<a class="move icon" title="' + Craft.t('commerce-product-bundles', 'Reorder') + '" role="button"></a> ' +
                     '</div>' +
                     '</div>'
                 );
 
                 if ($insertBefore) {
-                    $variant.insertBefore($insertBefore);
+                    $product.insertBefore($insertBefore);
                 }
                 else {
-                    $variant.appendTo(this.$variantContainer);
+                    $product.appendTo(this.$productContainer);
                 }
 
-                var $fieldsContainer = $('<div class="fields"/>').appendTo($variant),
-                    bodyHtml = this.getParsedVariantHtml(this.fieldBodyHtml, id),
-                    footHtml = this.getParsedVariantHtml(this.fieldFootHtml, id);
+                var $fieldsContainer = $('<div class="fields"/>').appendTo($product),
+                    bodyHtml = this.getParsedProductHtml(this.fieldBodyHtml, id),
+                    footHtml = this.getParsedProductHtml(this.fieldFootHtml, id);
 
                 var $body = $(bodyHtml);
                 $body.find('#related-sales-field').remove();
@@ -160,70 +154,70 @@
                 $body.appendTo($fieldsContainer);
 
                 if (this.singleColumnMode) {
-                    this.setVariantsToSingleColMode($variant);
+                    this.setProductsToSingleColMode($product);
                 }
 
-                // Animate the variant into position
-                $variant.css(this.getHiddenVariantCss($variant)).velocity({
+                // Animate the product into position
+                $product.css(this.getHiddenProductCss($product)).velocity({
                     opacity: 1,
                     'margin-bottom': 10
                 }, 'fast', $.proxy(function() {
-                    $variant.css('margin-bottom', '');
+                    $product.css('margin-bottom', '');
                     Garnish.$bod.append(footHtml);
                     Craft.initUiElements($fieldsContainer);
-                    Craft.Commerce.initUnlimitedStockCheckbox($variant);
-                    var variant = new Variant(this, $variant);
-                    this.variantSort.addItems($variant);
-                    this.variantSelect.addItems($variant);
+                    Craft.Commerce.initUnlimitedStockCheckbox($product);
+                    var product = new Product(this, $product);
+                    this.productSort.addItems($product);
+                    this.productSelect.addItems($product);
 
                     Garnish.requestAnimationFrame(function() {
-                        // Scroll to the variant
-                        Garnish.scrollContainerToElement($variant);
+                        // Scroll to the product
+                        Garnish.scrollContainerToElement($product);
                     });
 
-                    // If this is the only variant, set it as the default
-                    if (this.$variantContainer.children().length === 1) {
-                        this.setDefaultVariant(variant);
+                    // If this is the only product, set it as the default
+                    if (this.$productContainer.children().length === 1) {
+                        this.setDefaultProduct(product);
                     }
                 }, this));
             },
 
-            collapseSelectedVariants: function() {
-                this.callOnSelectedVariants('collapse');
+            collapseSelectedProducts: function() {
+                this.callOnSelectedProducts('collapse');
             },
 
-            expandSelectedVariants: function() {
-                this.callOnSelectedVariants('expand');
+            expandSelectedProducts: function() {
+                this.callOnSelectedProducts('expand');
             },
 
-            disableSelectedVariants: function() {
-                this.callOnSelectedVariants('disable');
+            disableSelectedProducts: function() {
+                this.callOnSelectedProducts('disable');
             },
 
-            enableSelectedVariants: function() {
-                this.callOnSelectedVariants('enable');
+            enableSelectedProducts: function() {
+                this.callOnSelectedProducts('enable');
             },
 
-            deleteSelectedVariants: function() {
-                this.callOnSelectedVariants('selfDestruct');
+            deleteSelectedProducts: function() {
+                this.callOnSelectedProducts('selfDestruct');
             },
 
-            callOnSelectedVariants: function(fn) {
-                for (var i = 0; i < this.variantSelect.$selectedItems.length; i++) {
-                    this.variantSelect.$selectedItems.eq(i).data('variant')[fn]();
+            callOnSelectedProducts: function(fn) {
+                for (var i = 0; i < this.productSelect.$selectedItems.length; i++) {
+                    this.productSelect.$selectedItems.eq(i).data('product')[fn]();
                 }
             },
 
-            getHiddenVariantCss: function($variant) {
+            getHiddenProductCss: function($product) {
                 return {
                     opacity: 0,
-                    marginBottom: -($variant.outerHeight())
+                    marginBottom: -($product.outerHeight())
                 };
             },
 
-            getParsedVariantHtml: function(html, id) {
+            getParsedProductHtml: function(html, id) {
                 if (typeof html === 'string') {
-                    return html.replace(/__VARIANT__/g, id);
+                    return html.replace(/__PRODUCT__/g, id);
                 }
                 else {
                     return '';
@@ -233,72 +227,72 @@
             handleContainerResize: function() {
                 if (this.$container.width() < 700) {
                     if (!this.singleColumnMode) {
-                        this.setVariantsToSingleColMode(this.variantSort.$items);
+                        this.setProductsToSingleColMode(this.productSort.$items);
                         this.singleColumnMode = true;
                     }
                 } else {
                     if (this.singleColumnMode) {
-                        this.setVariantsToTwoColMode(this.variantSort.$items);
-                        this.variantSort.$items.removeClass('single-col');
+                        this.setProductsToTwoColMode(this.productSort.$items);
+                        this.productSort.$items.removeClass('single-col');
                         this.singleColumnMode = false;
                     }
                 }
             },
 
-            setVariantsToSingleColMode: function($variants) {
-                $variants
+            setProductsToSingleColMode: function($products) {
+                $products
                     .addClass('single-col')
                     .find('> .fields > .custom-fields').addClass('meta');
             },
 
-            setVariantsToTwoColMode: function($variants) {
-                $variants
+            setProductsToTwoColMode: function($products) {
+                $products
                     .removeClass('single-col')
                     .find('> .fields > .custom-fields').removeClass('meta');
             }
         },
         {
-            collapsedVariantStorageKey: 'Craft-' + Craft.siteUid + '.Commerce.VariantMatrix.collapsedVariants',
+            collapsedProductStorageKey: 'Craft-' + Craft.siteUid + '.Commerce.ProductMatrix.collapsedProducts',
 
-            getCollapsedVariantIds: function() {
-                if (typeof localStorage[Craft.Bundles.ProductMatrix.collapsedVariantStorageKey] === 'string') {
-                    return Craft.filterArray(localStorage[Craft.Bundles.ProductMatrix.collapsedVariantStorageKey].split(','));
+            getCollapsedProductIds: function() {
+                if (typeof localStorage[Craft.Bundles.ProductMatrix.collapsedProductStorageKey] === 'string') {
+                    return Craft.filterArray(localStorage[Craft.Bundles.ProductMatrix.collapsedProductStorageKey].split(','));
                 }
                 else {
                     return [];
                 }
             },
 
-            setCollapsedVariantIds: function(ids) {
-                localStorage[Craft.Commerce.VariantMatrix.collapsedVariantStorageKey] = ids.join(',');
+            setCollapsedProductIds: function(ids) {
+                localStorage[Craft.Commerce.ProductMatrix.collapsedProductStorageKey] = ids.join(',');
             },
 
-            rememberCollapsedVariantId: function(id) {
+            rememberCollapsedProductId: function(id) {
                 if (typeof Storage !== 'undefined') {
-                    var collapsedVariants = Craft.Commerce.VariantMatrix.getCollapsedVariantIds();
+                    var collapsedProducts = Craft.Commerce.ProductMatrix.getCollapsedProductIds();
 
-                    if ($.inArray('' + id, collapsedVariants) === -1) {
-                        collapsedVariants.push(id);
-                        Craft.Commerce.VariantMatrix.setCollapsedVariantIds(collapsedVariants);
+                    if ($.inArray('' + id, collapsedProducts) === -1) {
+                        collapsedProducts.push(id);
+                        Craft.Commerce.ProductMatrix.setCollapsedProductIds(collapsedProducts);
                     }
                 }
             },
 
-            forgetCollapsedVariantId: function(id) {
+            forgetCollapsedProductId: function(id) {
                 if (typeof Storage !== 'undefined') {
-                    var collapsedVariants = Craft.Commerce.VariantMatrix.getCollapsedVariantIds(),
-                        collapsedVariantsIndex = $.inArray('' + id, collapsedVariants);
+                    var collapsedProducts = Craft.Commerce.ProductMatrix.getCollapsedProductIds(),
+                        collapsedProductsIndex = $.inArray('' + id, collapsedProducts);
 
-                    if (collapsedVariantsIndex !== -1) {
-                        collapsedVariants.splice(collapsedVariantsIndex, 1);
-                        Craft.Commerce.VariantMatrix.setCollapsedVariantIds(collapsedVariants);
+                    if (collapsedProductsIndex !== -1) {
+                        collapsedProducts.splice(collapsedProductsIndex, 1);
+                        Craft.Commerce.ProductMatrix.setCollapsedProductIds(collapsedProducts);
                     }
                 }
             }
         });
 
 
-    var Variant = Garnish.Base.extend(
+    var Product = Garnish.Base.extend(
         {
             matrix: null,
             $container: null,
@@ -324,7 +318,7 @@
                 this.$defaultInput = this.$container.children('.default-input');
                 this.$defaultBtn = this.$container.find('> .actions > .default-btn');
 
-                this.$container.data('variant', this);
+                this.$container.data('product', this);
 
                 this.id = this.$container.data('id');
                 this.isNew = (!this.id || (typeof this.id === 'string' && this.id.substr(0, 3) === 'new'));
@@ -336,7 +330,7 @@
 
                 menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
 
-                // Was this variant already collapsed?
+                // Was this product already collapsed?
                 if (Garnish.hasAttr(this.$container, 'data-collapsed')) {
                     this.collapse();
                 }
@@ -346,14 +340,14 @@
                     this.toggle();
                 });
 
-                // Is this variant the default?
+                // Is this product the default?
                 if (this.$defaultInput.val() === '1') {
-                    this.matrix.setDefaultVariant(this);
+                    this.matrix.setDefaultProduct(this);
                 }
 
                 this.addListener(this.$defaultBtn, 'click', function(ev) {
                     ev.preventDefault();
-                    this.matrix.setDefaultVariant(this);
+                    this.matrix.setDefaultProduct(this);
                 });
             },
 
@@ -445,7 +439,7 @@
 
                 // Remember that?
                 if (!this.isNew) {
-                    Craft.Commerce.VariantMatrix.rememberCollapsedVariantId(this.id);
+                    Craft.Commerce.ProductMatrix.rememberCollapsedProductId(this.id);
                 }
                 else {
                     if (!this.$collapsedInput) {
@@ -487,17 +481,17 @@
 
                 // Remember that?
                 if (!this.isNew && typeof Storage !== 'undefined') {
-                    var collapsedVariants = Craft.Commerce.VariantMatrix.getCollapsedVariantIds(),
-                        collapsedVariantsIndex = $.inArray('' + this.id, collapsedVariants);
+                    var collapsedProducts = Craft.Commerce.ProductMatrix.getCollapsedProductIds(),
+                        collapsedProductsIndex = $.inArray('' + this.id, collapsedProducts);
 
-                    if (collapsedVariantsIndex !== -1) {
-                        collapsedVariants.splice(collapsedVariantsIndex, 1);
-                        Craft.Commerce.VariantMatrix.setCollapsedVariantIds(collapsedVariants);
+                    if (collapsedProductsIndex !== -1) {
+                        collapsedProducts.splice(collapsedProductsIndex, 1);
+                        Craft.Commerce.ProductMatrix.setCollapsedProductIds(collapsedProducts);
                     }
                 }
 
                 if (!this.isNew) {
-                    Craft.Commerce.VariantMatrix.forgetCollapsedVariantId(this.id);
+                    Craft.Commerce.ProductMatrix.forgetCollapsedProductId(this.id);
                 }
                 else if (this.$collapsedInput) {
                     this.$collapsedInput.val('');
@@ -508,7 +502,7 @@
 
             disable: function() {
                 if (this.isDefault()) {
-                    // Can't disable the default variant
+                    // Can't disable the default product
                     return false;
                 }
 
@@ -543,7 +537,7 @@
                     .addClass('sel')
                     .attr('title', '');
 
-                // Default variants must be enabled
+                // Default products must be enabled
                 this.enable();
                 this.$actionMenu.find('a[data-action=disable]:first').parent().addClass('disabled');
             },
@@ -552,7 +546,7 @@
                 this.$defaultInput.val('');
                 this.$defaultBtn
                     .removeClass('sel')
-                    .attr('title', 'Set as the default variant');
+                    .attr('title', 'Set as the default product');
 
                 this.$actionMenu.find('a[data-action=disable]:first').parent().removeClass('disabled');
             },
@@ -562,13 +556,13 @@
             },
 
             onMenuOptionSelect: function(option) {
-                var batchAction = (this.matrix.variantSelect.totalSelected > 1 && this.matrix.variantSelect.isSelected(this.$container)),
+                var batchAction = (this.matrix.productSelect.totalSelected > 1 && this.matrix.productSelect.isSelected(this.$container)),
                     $option = $(option);
 
                 switch ($option.data('action')) {
                     case 'collapse': {
                         if (batchAction) {
-                            this.matrix.collapseSelectedVariants();
+                            this.matrix.collapseSelectedProducts();
                         }
                         else {
                             this.collapse(true);
@@ -579,7 +573,7 @@
 
                     case 'expand': {
                         if (batchAction) {
-                            this.matrix.expandSelectedVariants();
+                            this.matrix.expandSelectedProducts();
                         }
                         else {
                             this.expand();
@@ -590,7 +584,7 @@
 
                     case 'disable': {
                         if (batchAction) {
-                            this.matrix.disableSelectedVariants();
+                            this.matrix.disableSelectedProducts();
                         }
                         else {
                             this.disable();
@@ -601,7 +595,7 @@
 
                     case 'enable': {
                         if (batchAction) {
-                            this.matrix.enableSelectedVariants();
+                            this.matrix.enableSelectedProducts();
                         }
                         else {
                             this.enable();
@@ -612,14 +606,14 @@
                     }
 
                     case 'add': {
-                        this.matrix.addVariant(this.$container);
+                        this.matrix.addProduct(this.$container);
                         break;
                     }
 
                     case 'delete': {
                         if (batchAction) {
-                            if (confirm(Craft.t('commerce', 'Are you sure you want to delete the selected variants?'))) {
-                                this.matrix.deleteSelectedVariants();
+                            if (confirm(Craft.t('commerce-product-bundles', 'Are you sure you want to delete the selected products?'))) {
+                                this.matrix.deleteSelectedProducts();
                             }
                         }
                         else {
@@ -632,15 +626,15 @@
             },
 
             selfDestruct: function() {
-                this.$container.velocity(this.matrix.getHiddenVariantCss(this.$container), 'fast', $.proxy(function() {
+                this.$container.velocity(this.matrix.getHiddenProductCss(this.$container), 'fast', $.proxy(function() {
                     this.$container.remove();
 
-                    // If this is the default variant, set the first variant as default instead
+                    // If this is the default product, set the first product as default instead
                     if (this.isDefault()) {
-                        var variant = this.matrix.$variantContainer.children(':first-child').data('variant');
+                        var product = this.matrix.$productContainer.children(':first-child').data('product');
 
-                        if (variant) {
-                            this.matrix.setDefaultVariant(variant);
+                        if (product) {
+                            this.matrix.setDefaultProduct(product);
                         }
                     }
                 }, this));

@@ -2,8 +2,6 @@
 
 namespace tde\craft\commerce\bundles\records;
 
-use craft\commerce\records\ShippingCategory;
-use craft\commerce\records\TaxCategory;
 use craft\db\ActiveRecord;
 use craft\records\Element;
 use yii\db\ActiveQueryInterface;

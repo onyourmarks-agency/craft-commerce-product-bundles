@@ -33,7 +33,7 @@ class ProductMatrix
         $viewService = \Craft::$app->getView();
         $id = Html::id($name);
 
-        $html = $viewService->renderTemplate('commerce-product-bundles/bundles/_product_matrix', [
+        $html = $viewService->renderTemplate('commerce-product-bundles/product-bundles/_product_matrix', [
             'id' => $id,
             'name' => $name,
             'productElementType' => Product::class,
@@ -80,8 +80,8 @@ class ProductMatrix
         $templatesService = \Craft::$app->getView();
         $templatesService->startJsBuffer();
 
-        $bodyHtml = $templatesService->renderTemplate('commerce-product-bundles/bundles/_product_matrix_fields', [
-            'namespace' => Html::namespaceInputName('__VARIANT__', $namespace),
+        $bodyHtml = $templatesService->renderTemplate('commerce-product-bundles/product-bundles/_product_matrix_fields', [
+            'namespace' => Html::namespaceInputName('__PRODUCT__', $namespace),
             'productBundle' => $productBundle,
             'productElementType' => Product::class,
         ]);

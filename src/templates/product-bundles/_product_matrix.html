@@ -15,19 +15,19 @@
 				<div class="titlebar">
 					<div class="preview"></div>
 				</div>
-				<div class="checkbox" title="{{ 'Select'|t('commerce') }}"></div>
+				<div class="checkbox" title="{{ 'Select'|t('commerce-product-bundles') }}"></div>
 				<div class="actions">
-					<a class="setings icon menubtn" title="{{ 'Actions'|t('commerce') }}" role="button"></a>
+					<a class="setings icon menubtn" title="{{ 'Actions'|t('commerce-product-bundles') }}" role="button"></a>
 					<div class="menu">
 						<ul class="padded">
 							<li>
 								<a data-icon="collapse" data-action="collapse">
-									{{ "Collapse"|t('commerce') }}
+									{{ 'Collapse'|t('commerce-product-bundles') }}
 								</a>
 							</li>
 							<li class="hidden">
 								<a data-icon="expand" data-action="expand">
-									{{ "Expand"|t('commerce') }}
+									{{ 'Expand'|t('commerce-product-bundles') }}
 								</a>
 							</li>
 						</ul>
@@ -35,7 +35,7 @@
 						<ul class="padded">
 							<li>
 								<a data-icon="+" data-action="add">
-									{{ "Add product above"|t('commerce') }}
+									{{ 'Add product above'|t('commerce-product-bundles') }}
 								</a>
 							</li>
 						</ul>
@@ -43,18 +43,18 @@
 						<ul class="padded">
 							<li>
 								<a data-icon="remove" data-action="delete">
-									{{ "Delete"|t('commerce') }}
+									{{ 'Delete'|t('commerce-product-bundles') }}
 								</a>
 							</li>
 						</ul>
 					</div>
-					<a class="move icon" title="{{ 'Reorder'|t('commerce') }}" role="button"></a>
+					<a class="move icon" title="{{ 'Reorder'|t('commerce-product-bundles') }}" role="button"></a>
 				</div>
 				<div class="fields">
-					{% include 'commerce-product-bundles/bundles/_product_matrix_fields' %}
+					{% include 'commerce-product-bundles/product-bundles/_product_matrix_fields' %}
 				</div>
 			</div>
 		{% endfor %}
 	</div>
-	<div class="btn add icon">{{ "Add a product"|t('commerce') }}</div>
+	<div class="btn add icon">{{ 'Add a product'|t('commerce-product-bundles') }}</div>
 </div>

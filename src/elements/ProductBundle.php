@@ -8,8 +8,6 @@ use craft\commerce\elements\Product;
 use craft\commerce\events\CustomizeProductSnapshotDataEvent;
 use craft\commerce\events\CustomizeProductSnapshotFieldsEvent;
 use craft\commerce\models\LineItem;
-use craft\commerce\models\ShippingCategory;
-use craft\commerce\models\TaxCategory;
 use craft\commerce\Plugin as CommercePlugin;
 use craft\db\Query;
 use craft\elements\actions\Delete;
@@ -20,6 +18,8 @@ use craft\models\FieldLayoutTab;
 use craft\validators\DateTimeValidator;
 use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
 use tde\craft\commerce\bundles\fieldlayoutelements\ProductField;
+use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
+use tde\craft\commerce\bundles\models\Settings;
 use tde\craft\commerce\bundles\Plugin;
 use tde\craft\commerce\bundles\records\ProductBundle as ProductBundleRecord;
 use yii\base\Exception;
@@ -108,7 +108,7 @@ class ProductBundle extends Purchasable
      */
     public static function hasUris(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -174,6 +174,8 @@ class ProductBundle extends Purchasable
             'price' => ['label' => \Craft::t('commerce-product-bundles', 'Price')],
             'postDate' => ['label' => \Craft::t('commerce-product-bundles', 'Post Date')],
             'expiryDate' => ['label' => \Craft::t('commerce-product-bundles', 'Expiry Date')],
+            'uri' => ['label' => \Craft::t('commerce-product-bundles', 'URI')],
+            'link' => ['label' => \Craft::t('commerce-product-bundles', 'Link'), 'icon' => 'world'],
         ];
     }
 
@@ -187,6 +189,7 @@ class ProductBundle extends Purchasable
             'sku',
             'postDate',
             'expiryDate',
+            'link',
         ];
     }
 
@@ -281,7 +284,7 @@ class ProductBundle extends Purchasable
     {
         $rules = parent::rules();
 
-        $rules[] = [['sku', 'price', 'products'], 'required'];
+        $rules[] = [['sku', 'price'], 'required'];
         $rules[] = [['sku'], 'string'];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
@@ -313,7 +316,11 @@ class ProductBundle extends Purchasable
      */
     public function getUriFormat()
     {
-        return null;
+        if (!$siteSettings = ProductBundleHelper::getSiteSettings($this)) {
+            return null;
+        }
+
+        return $siteSettings['uriFormat'];
     }
 
     /**
@@ -391,14 +398,6 @@ class ProductBundle extends Purchasable
      * @inheritDoc
      */
     public function hasFreeShipping(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getIsPromotable(): bool
     {
         return true;
     }
@@ -541,7 +540,7 @@ class ProductBundle extends Purchasable
                 'purchasableId',
                 function ($attribute, $params, Validator $validator) use ($lineItem) {
                     if ($lineItem->getPurchasable()->getStatus() != self::STATUS_LIVE) {
-                        $validator->addError($lineItem, $attribute, \Craft::t('commerce', 'The item is not enabled for sale.'));
+                        $validator->addError($lineItem, $attribute, \Craft::t('commerce-product-bundles', 'The item is not enabled for sale.'));
                     }
                 }
             ],
@@ -550,7 +549,7 @@ class ProductBundle extends Purchasable
                 function ($attribute, $params, Validator $validator) use ($lineItem) {
                     // no stock at all
                     if (!$this->hasStock()) {
-                        $error = \Craft::t('commerce', '"{description}" is currently out of stock.', ['description' => $lineItem->purchasable->getDescription()]);
+                        $error = \Craft::t('commerce-product-bundles', '"{description}" is currently out of stock.', ['description' => $lineItem->purchasable->getDescription()]);
                         $validator->addError($lineItem, $attribute, $error);
                     }
 
@@ -558,7 +557,7 @@ class ProductBundle extends Purchasable
 
                     // lineItem qty exceeds the quantity left
                     if ($this->hasStock() && $lineItem->qty > $orderableQuantity) {
-                        $error = \Craft::t('commerce', 'There are only {num} "{description}" items left in stock.', [
+                        $error = \Craft::t('commerce-product-bundles', 'There are only {num} "{description}" items left in stock.', [
                             'num' => $orderableQuantity,
                             'description' => $lineItem->purchasable->getDescription()
                         ]);
@@ -616,22 +615,34 @@ class ProductBundle extends Purchasable
     protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
-            case 'taxCategory':
-                $taxCategory = $this->getTaxCategory();
-
-                return ($taxCategory ? \Craft::t('site', $taxCategory->name) : '');
-            case 'shippingCategory':
-                $shippingCategory = $this->getShippingCategory();
-
-                return ($shippingCategory ? \Craft::t('site', $shippingCategory->name) : '');
-            case 'defaultPrice':
+            case 'price':
                 $code = CommercePlugin::getInstance()->getPaymentCurrencies()->getPrimaryPaymentCurrencyIso();
 
                 return \Craft::$app->getLocale()->getFormatter()->asCurrency($this->$attribute, strtoupper($code));
-            case 'promotable':
-                return ($this->$attribute ? '<span data-icon="check" title="' . \Craft::t('commerce-product-bundles', 'Yes') . '"></span>' : '');
             default:
                 return parent::tableAttributeHtml($attribute);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function route()
+    {
+        // Make sure the product type is set to have URLs for this site
+        $siteId = \Craft::$app->getSites()->currentSite->id;
+
+        if (!$siteSettings = ProductBundleHelper::getSiteSettings($this, $siteId)) {
+            return null;
+        }
+
+        return [
+            'templates/render', [
+                'template' => (string) $siteSettings['template'],
+                'variables' => [
+                    'productBundle' => $this,
+                ]
+            ]
+        ];
     }
 }

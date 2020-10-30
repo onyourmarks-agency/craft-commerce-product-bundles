@@ -9,7 +9,10 @@ use craft\commerce\models\LineItem;
 use craft\db\Query;
 use craft\errors\ElementNotFoundException;
 use tde\craft\commerce\bundles\elements\ProductBundle;
+use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
 use tde\craft\commerce\bundles\models\ProductBundleProduct;
+use tde\craft\commerce\bundles\models\Settings;
+use tde\craft\commerce\bundles\Plugin;
 use tde\craft\commerce\bundles\records\ProductBundleProduct as ProductBundleProductRecord;
 use yii\base\Component;
 use yii\base\Exception;
@@ -24,7 +27,7 @@ class ProductBundleService extends Component
     /**
      * @param int $id
      * @param null $siteId
-     * @return ElementInterface|null
+     * @return ProductBundle|ElementInterface|null
      */
     public function getProductBundleById(int $id, $siteId = null)
     {
