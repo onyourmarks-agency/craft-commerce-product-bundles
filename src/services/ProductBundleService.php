@@ -116,21 +116,32 @@ class ProductBundleService extends Component
     }
 
     /**
+     * Get the product bundle orderable quantity based on the bundle quantity and bundle product quantity & stock
+     *
+     * @param ProductBundle $productBundle
      * @param LineItem $lineItem
+     *
      * @return int
      */
-    public function getOrderableQuantity(LineItem $lineItem)
+    public function getOrderableQuantity(ProductBundle $productBundle, LineItem $lineItem)
     {
         $orderableQuantity = 9999999999;
 
-        foreach ($lineItem->getOptions()['productBundleProductsVariantIds'] as $variantId) {
+        foreach ($lineItem->getOptions()[ProductBundle::KEY_PRODUCTS] as $productId => $variantId) {
             $variant = Variant::findOne(['id' => $variantId]);
-            if (!$variant->hasUnlimitedStock) {
-                if (is_null($orderableQuantity)) {
-                    $orderableQuantity = $variant->stock;
-                } else if ($variant->stock < $orderableQuantity) {
-                    $orderableQuantity = $variant->stock;
-                }
+
+            if ($variant->hasUnlimitedStock) {
+                continue;
+            }
+
+            // the orderable variant quantity is stock * qty
+            $qty = ProductBundleHelper::getProductQuantity($productBundle, $productId);
+            $orderableVariantQuantity = $variant->stock / $qty;
+
+            if (is_null($orderableQuantity)) {
+                $orderableQuantity = $orderableVariantQuantity;
+            } else if ($orderableVariantQuantity < $orderableQuantity) {
+                $orderableQuantity = $orderableVariantQuantity;
             }
         }
 
@@ -155,8 +166,8 @@ class ProductBundleService extends Component
     protected function isPurchasable(ProductBundle $productBundle)
     {
         // not enabled
-        foreach ($productBundle->getProducts() as $product) {
-            if (!$product->enabled) {
+        foreach ($productBundle->getProducts() as $productSet) {
+            if (!$productSet['product']->enabled) {
                 return false;
             }
         }

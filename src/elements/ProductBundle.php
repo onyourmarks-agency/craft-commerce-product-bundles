@@ -41,6 +41,10 @@ class ProductBundle extends Purchasable
     const STATUS_PENDING = 'pending';
     const STATUS_EXPIRED = 'expired';
 
+    // keys used in DOM and snapshots
+    const KEY_PRODUCTS = 'productBundleProducts';
+    const KEY_PRODUCTS_META = 'productBundleProductsMeta';
+
     /**
      * @var int
      */
@@ -409,8 +413,8 @@ class ProductBundle extends Purchasable
      */
     public function hasStock(): bool
     {
-        foreach ($this->getProducts() as $product) {
-            foreach ($product->getVariants() as $variant) {
+        foreach ($this->getProducts() as $productSet) {
+            foreach ($productSet['product']->getVariants() as $variant) {
                 if ($variant->hasStock() || $variant->hasUnlimitedStock) {
                     // one of the variants of this product is in stock, continue to next product
                     continue 2;
@@ -460,8 +464,8 @@ class ProductBundle extends Purchasable
      */
     public function afterOrderComplete(Order $order, LineItem $lineItem)
     {
-        foreach ($lineItem->snapshot['options']['productBundleProductsVariantIds'] as $productVariantId) {
-            $purchasable = CommercePlugin::getInstance()->getVariants()->getVariantById($productVariantId);
+        foreach ($lineItem->snapshot['options'][self::KEY_PRODUCTS] as $productId => $variantId) {
+            $purchasable = CommercePlugin::getInstance()->getVariants()->getVariantById($variantId);
 
             if ($purchasable->hasUnlimitedStock) {
                 continue;
@@ -553,7 +557,7 @@ class ProductBundle extends Purchasable
                         $validator->addError($lineItem, $attribute, $error);
                     }
 
-                    $orderableQuantity = Plugin::getInstance()->productBundleService->getOrderableQuantity($lineItem);
+                    $orderableQuantity = Plugin::getInstance()->productBundleService->getOrderableQuantity($this, $lineItem);
 
                     // lineItem qty exceeds the quantity left
                     if ($this->hasStock() && $lineItem->qty > $orderableQuantity) {

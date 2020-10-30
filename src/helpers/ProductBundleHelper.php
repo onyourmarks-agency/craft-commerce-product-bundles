@@ -8,6 +8,7 @@ use craft\web\Request;
 use tde\craft\commerce\bundles\elements\ProductBundle;
 use tde\craft\commerce\bundles\models\Settings;
 use tde\craft\commerce\bundles\Plugin;
+use yii\base\InvalidCallException;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -109,5 +110,24 @@ class ProductBundleHelper
         $siteSettings = $pluginSettings->siteSettings;
 
         return $siteSettings[$siteId] ?? null;
+    }
+
+    /**
+     * Get the quantity set for the given product-id in the bundle
+     *
+     * @param ProductBundle $productBundle
+     * @param int $productId
+     *
+     * @return int
+     */
+    public static function getProductQuantity(ProductBundle $productBundle, int $productId)
+    {
+        foreach ($productBundle->getProducts() as $productSet) {
+            if ($productSet['product']->id === $productId) {
+                return (int) $productSet['qty'];
+            }
+        }
+
+        throw new InvalidCallException('Requesting product quantity of a product not in the given bundle');
     }
 }

@@ -18,6 +18,7 @@ use craft\web\twig\variables\Cp;
 use tde\craft\commerce\bundles\behaviors\ProductBundleBehavior;
 use tde\craft\commerce\bundles\elements\ProductBundle;
 use tde\craft\commerce\bundles\fields\ProductBundleField;
+use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
 use tde\craft\commerce\bundles\models\Settings;
 use tde\craft\commerce\bundles\services\ProductBundleService;
 use tde\craft\commerce\bundles\variables\ProductBundlesVariable;
@@ -112,15 +113,27 @@ class Plugin extends \craft\base\Plugin
             LineItems::class,
             LineItems::EVENT_POPULATE_LINE_ITEM,
             function (LineItemEvent $lineItemEvent) {
-                if (!isset($lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantIds'])) {
+                $lineItem = $lineItemEvent->lineItem;
+                $purchasable = $lineItem->getPurchasable();
+
+                if (!$purchasable instanceof ProductBundle) {
                     return;
                 }
 
-                $lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantMeta'] = [];
+                if (!isset($lineItem->snapshot['options'][ProductBundle::KEY_PRODUCTS])) {
+                    return;
+                }
 
-                foreach ($lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantIds'] as $variantId) {
+                $lineItem->snapshot['options'][ProductBundle::KEY_PRODUCTS_META] = [];
+
+                foreach ($lineItem->snapshot['options'][ProductBundle::KEY_PRODUCTS] as $productId => $variantId) {
                     $variant = Variant::findOne(['id' => $variantId]);
-                    $lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantMeta'][] = $variant->getSnapshot();
+                    $qty = ProductBundleHelper::getProductQuantity($purchasable, $productId);
+
+                    $lineItem->snapshot['options'][ProductBundle::KEY_PRODUCTS_META][] = [
+                        'variant' => $variant->getSnapshot(),
+                        'qty' => $qty,
+                    ];
                 }
             }
         );
