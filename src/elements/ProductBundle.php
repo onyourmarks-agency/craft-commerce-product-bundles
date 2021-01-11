@@ -578,7 +578,13 @@ class ProductBundle extends Purchasable
      */
     public function getCpEditUrl()
     {
-        return UrlHelper::cpUrl('commerce/product-bundles/' . $this->id);
+        $url = UrlHelper::cpUrl('commerce/product-bundles/' . $this->id);
+
+        if (\Craft::$app->getIsMultiSite()) {
+            $url .= '/' . $this->getSite()->handle;
+        }
+
+        return $url;
     }
 
     /**

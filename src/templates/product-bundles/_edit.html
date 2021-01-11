@@ -42,15 +42,16 @@
                     {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
                     <li>
                         {% if siteId == productBundle.siteId %}
-                            <a class="sel">
+							<a class="sel" data-site-id="{{ siteId }}">
                                 <div class="status {{ status }}"></div>
                                 {{ site.name|t('site') }}
                             </a>
                         {% else %}
-                            <a href="{{ url('commerce/product-bundles/new/' ~ site.handle) }}">
-                                <div class="status {{ status }}"></div>
-                                {{ site.name|t('site') }}
-                            </a>
+							{% set url = url("commerce/product-bundles/#{craft.app.request.getSegment(3)}/#{site.handle}") %}
+							<a href="{{ url }}" data-site-id="{{ siteId }}">
+								<div class="status {{ status }}"></div>
+								{{ site.name|t('site') }}
+							</a>
                         {% endif %}
                     </li>
                 {% endfor %}
