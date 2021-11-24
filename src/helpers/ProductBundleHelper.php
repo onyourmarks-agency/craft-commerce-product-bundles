@@ -4,6 +4,7 @@ namespace tde\craft\commerce\bundles\helpers;
 
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Localization;
+use craft\helpers\StringHelper;
 use craft\web\Request;
 use tde\craft\commerce\bundles\elements\ProductBundle;
 use tde\craft\commerce\bundles\models\Settings;
@@ -63,6 +64,8 @@ class ProductBundleHelper
         }
 
         $productBundle->title = $request->getBodyParam('title', $productBundle->title);
+        $productBundle->slug = $request->getBodyParam('slug', StringHelper::slugify($productBundle->title));
+
         $productBundle->setProducts($request->getBodyParam('products'));
         $productBundle->setFieldValuesFromRequest('fields');
 
