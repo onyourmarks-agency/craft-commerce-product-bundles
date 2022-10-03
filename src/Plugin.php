@@ -25,10 +25,7 @@ use tde\craft\commerce\bundles\variables\ProductBundlesVariable;
 use yii\base\Event;
 
 /**
- * Class Plugin
- *
  * @property ProductBundleService $productBundleService
- *
  * @package tde\craft\commerce\bundles
  */
 class Plugin extends \craft\base\Plugin

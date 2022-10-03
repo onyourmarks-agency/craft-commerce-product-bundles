@@ -1,4 +1,5 @@
-# Bundles Plugin for [Craft CMS 3](https://craftcms.com/) with [Craft Commerce 2 & 3](https://craftcms.com/commerce)
+# Craft Commerce Product Bundles
+## Plugin for [Craft CMS](https://craftcms.com/) with [Craft Commerce](https://craftcms.com/commerce)
 
 Combine multiple products into a purchasable bundle to sell these for a special price. 
 Thanks to the inspiration coming from the existing [Commerce Bundles](https://plugins.craftcms.com/commerce-bundles) plugin, this plugin allows you to create bundles from products and not just their variants.

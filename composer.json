@@ -1,33 +1,33 @@
 {
-    "name": "tde/craft-commerce-product-bundles",
-    "description": "Combine multiple products into a purchasable bundle to sell these for a special price.",
-    "type": "craft-plugin",
-    "require": {
-        "craftcms/cms": "^3.2",
-        "craftcms/commerce": "^2.1 || ^3.1"
-    },
-    "license": "proprietary",
-    "authors": [
-        {
-            "name": "TDE",
-            "email": "info@tde.nl"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "tde\\craft\\commerce\\bundles\\": "src/"
-        }
-    },
-    "extra": {
-        "name": "Commerce Product Bundles",
-        "handle": "commerce-product-bundles",
-        "hasCpSettings": true,
-        "hasCpSection": false,
-        "changelogUrl": "https://raw.githubusercontent.com/tdeNL/craft-commerce-product-bundles/master/CHANGELOG.md",
-        "documentationUrl": "https://github.com/tdeNL/craft-commerce-product-bundles",
-        "components": {
-            "productBundleService": "tde\\craft\\commerce\\bundles\\services\\ProductBundleService"
-        },
-        "class": "tde\\craft\\commerce\\bundles\\Plugin"
-    }
+	"name": "tde/craft-commerce-product-bundles",
+	"description": "Combine multiple products into a purchasable bundle to sell these for a special price.",
+	"type": "craft-plugin",
+	"require": {
+		"craftcms/cms": "^3.2 || ^4.0",
+		"craftcms/commerce": "^2.1 || ^3.1"
+	},
+	"license": "proprietary",
+	"authors": [
+		{
+			"name": "TDE",
+			"email": "info@tde.nl"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"tde\\craft\\commerce\\bundles\\": "src/"
+		}
+	},
+	"extra": {
+		"name": "Commerce Product Bundles",
+		"handle": "commerce-product-bundles",
+		"hasCpSettings": true,
+		"hasCpSection": false,
+		"changelogUrl": "https://raw.githubusercontent.com/tdeNL/craft-commerce-product-bundles/master/CHANGELOG.md",
+		"documentationUrl": "https://github.com/tdeNL/craft-commerce-product-bundles",
+		"components": {
+			"productBundleService": "tde\\craft\\commerce\\bundles\\services\\ProductBundleService"
+		},
+		"class": "tde\\craft\\commerce\\bundles\\Plugin"
+	}
 }
