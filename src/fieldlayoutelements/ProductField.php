@@ -32,7 +32,7 @@ class ProductField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function defaultLabel(ElementInterface $element = null, bool $static = false)
+    protected function defaultLabel(ElementInterface $element = null, bool $static = false): ?string
     {
         return \Craft::t('commerce-product-bundles', 'Products');
     }
@@ -52,7 +52,7 @@ class ProductField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function inputHtml(ElementInterface $element = null, bool $static = false)
+    protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof ProductBundle) {
             throw new InvalidArgumentException('ProductField can only be used in product bundle field layouts.');

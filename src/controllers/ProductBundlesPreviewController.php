@@ -19,7 +19,7 @@ class ProductBundlesPreviewController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = true;
+    protected int|bool|array $allowAnonymous = true;
 
     /**
      * Previews a product bundle

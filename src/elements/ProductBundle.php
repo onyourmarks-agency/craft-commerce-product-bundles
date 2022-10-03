@@ -14,6 +14,7 @@ use craft\elements\actions\Delete;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\validators\DateTimeValidator;
 use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
@@ -46,9 +47,9 @@ class ProductBundle extends Purchasable
     const KEY_PRODUCTS_META = 'productBundleProductsMeta';
 
     /**
-     * @var int
+     * @var int|null
      */
-    public $id;
+    public ?int $id;
 
     /**
      * @var \DateTime
@@ -258,7 +259,7 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
-    public function getStatus()
+    public function getStatus(): ?string
     {
         $status = parent::getStatus();
 
@@ -318,7 +319,7 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
-    public function getUriFormat()
+    public function getUriFormat(): ?string
     {
         if (!$siteSettings = ProductBundleHelper::getSiteSettings($this)) {
             return null;
@@ -343,7 +344,7 @@ class ProductBundle extends Purchasable
     /**
      * @inheritDoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$isNew) {
             $record = ProductBundleRecord::findOne($this->id);
@@ -363,7 +364,7 @@ class ProductBundle extends Purchasable
 
         $record->save(false);
 
-        return parent::afterSave($isNew);
+        parent::afterSave($isNew);
     }
 
     /**
@@ -462,7 +463,7 @@ class ProductBundle extends Purchasable
      *
      * @inheritdoc
      */
-    public function afterOrderComplete(Order $order, LineItem $lineItem)
+    public function afterOrderComplete(Order $order, LineItem $lineItem): void
     {
         foreach ($lineItem->snapshot['options'][self::KEY_PRODUCTS] as $productId => $variantId) {
             $purchasable = CommercePlugin::getInstance()->getVariants()->getVariantById($variantId);
@@ -576,7 +577,7 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    public function getCpEditUrl(): ?string
     {
         $url = UrlHelper::cpUrl('commerce/product-bundles/' . $this->id);
 
@@ -598,7 +599,7 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         $fieldLayout = \Craft::$app->getFields()->getLayoutByType(self::class);
 
@@ -637,7 +638,7 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
-    protected function route()
+    protected function route(): array|null|string
     {
         // Make sure the product type is set to have URLs for this site
         $siteId = \Craft::$app->getSites()->currentSite->id;

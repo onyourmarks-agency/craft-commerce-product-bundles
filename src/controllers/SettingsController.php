@@ -19,11 +19,9 @@ use yii\web\Response;
 class SettingsController extends Controller
 {
     /**
-     * @return string
-     *
      * @throws BadRequestHttpException
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
         $this->requireCpRequest();
 
@@ -42,7 +40,7 @@ class SettingsController extends Controller
      * @throws MissingComponentException
      * @throws Exception
      */
-    public function actionSave()
+    public function actionSave(): ?Response
     {
         $this->requireCpRequest();
         $this->requirePostRequest();

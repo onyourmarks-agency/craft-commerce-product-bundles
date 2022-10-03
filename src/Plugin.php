@@ -2,6 +2,7 @@
 
 namespace tde\craft\commerce\bundles;
 
+use craft\base\Model;
 use craft\commerce\elements\Variant;
 use craft\commerce\events\LineItemEvent;
 use craft\commerce\services\LineItems;
@@ -30,19 +31,9 @@ use yii\base\Event;
  */
 class Plugin extends \craft\base\Plugin
 {
-    /**
-     * @var self
-     */
-    public static $instance;
+    public static self $instance;
+    public bool $hasCpSettings = true;
 
-    /**
-     * @var bool
-     */
-    public $hasCpSettings = true;
-
-    /**
-     * @inheritDoc
-     */
     public function init()
     {
         parent::init();
@@ -64,18 +55,12 @@ class Plugin extends \craft\base\Plugin
         $this->_registerCpRoutes();
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?Model
     {
         return new Settings();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsResponse()
+    public function getSettingsResponse(): mixed
     {
         return \Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('commerce/product-bundles/settings'));
     }
