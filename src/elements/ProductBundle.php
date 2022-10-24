@@ -604,7 +604,8 @@ class ProductBundle extends Purchasable
         $fieldLayout = \Craft::$app->getFields()->getLayoutByType(self::class);
 
         $layoutTabs = $fieldLayout->getTabs();
-        $layoutTabs[] = new FieldLayoutTab([
+        $layoutTabs[] = FieldLayoutTab::createFromConfig([
+            'layout' => $fieldLayout,
             'name' => \Craft::t('commerce-product-bundles', 'Products'),
             'elements' => [
                 [
