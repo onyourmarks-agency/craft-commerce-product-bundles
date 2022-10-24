@@ -496,38 +496,14 @@ class ProductBundle extends Purchasable
      */
     public function getSnapshot(): array
     {
-        $data = [];
-        $data['type'] = self::class;
-
-        // custom fields
-        $fields = [];
-        $fieldsEvent = new CustomizeProductSnapshotFieldsEvent([
-            'product' => $this,
-            'fields' => $fields
-        ]);
-
-        // Allow plugins to modify fields to be fetched
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT)) {
-            $this->trigger(self::EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT, $fieldsEvent);
-        }
-
-        $fieldData = $this->getSerializedFieldValues($fieldsEvent->fields);
-        $dataEvent = new CustomizeProductSnapshotDataEvent([
-            'product' => $this,
-            'fieldData' => $fieldData,
-        ]);
-
-        // Allow plugins to modify captured data
-        if ($this->hasEventHandlers(self::EVENT_AFTER_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT)) {
-            $this->trigger(self::EVENT_AFTER_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT, $dataEvent);
-        }
-
-        $data['fields'] = $dataEvent->fieldData;
-        $data['productId'] = $this->id;
-
-        return array_merge($this->getAttributes(), $data);
+        return array_merge(
+            $this->getAttributes(),
+            [
+                'type' => self::class,
+                'productId' => $this->id,
+            ],
+        );
     }
-
 
     /**
      * @inheritdoc
