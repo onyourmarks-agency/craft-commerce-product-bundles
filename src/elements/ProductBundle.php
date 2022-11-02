@@ -487,7 +487,7 @@ class ProductBundle extends Purchasable
                 ->where('id = :variantId', [':variantId' => $purchasable->id])
                 ->scalar();
 
-            \Craft::$app->getTemplateCaches()->deleteCachesByElementId($this->id);
+            \Craft::$app->getElements()->invalidateCachesForElement($this);
         }
     }
 
