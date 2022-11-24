@@ -49,7 +49,7 @@ class ProductBundle extends Purchasable
     /**
      * @var int|null
      */
-    public ?int $id;
+    public ?int $id = null;
 
     /**
      * @var \DateTime

@@ -1,5 +1,11 @@
 # Release Notes for `tde/commerce-product-bundles`
 
+## 2.0.0 - 2020-11-24
+
+### New features
+
+- Added support for Craft 4
+
 ## 1.1.2 - 2020-10-28
 
 ### Fixes

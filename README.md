@@ -8,8 +8,8 @@ Users can now order bundles and choose their desired variant, eg. shirt size M w
 ## Requirements
 
 This plugin requires:
-* Craft CMS 3.2 or later
-* Craft Commerce 2.1, 3.1 or later
+* Craft CMS 4 or later
+* Craft Commerce 4.1 or later
 
 ## Installation
 
