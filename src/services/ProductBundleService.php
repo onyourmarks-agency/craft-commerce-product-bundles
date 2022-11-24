@@ -9,7 +9,10 @@ use craft\commerce\models\LineItem;
 use craft\db\Query;
 use craft\errors\ElementNotFoundException;
 use tde\craft\commerce\bundles\elements\ProductBundle;
+use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
 use tde\craft\commerce\bundles\models\ProductBundleProduct;
+use tde\craft\commerce\bundles\models\Settings;
+use tde\craft\commerce\bundles\Plugin;
 use tde\craft\commerce\bundles\records\ProductBundleProduct as ProductBundleProductRecord;
 use yii\base\Component;
 use yii\base\Exception;
@@ -24,7 +27,7 @@ class ProductBundleService extends Component
     /**
      * @param int $id
      * @param null $siteId
-     * @return ElementInterface|null
+     * @return ProductBundle|ElementInterface|null
      */
     public function getProductBundleById(int $id, $siteId = null)
     {
@@ -56,7 +59,8 @@ class ProductBundleService extends Component
         foreach ($productBundle->getProducts() as $product) {
             $productBundleProduct = new ProductBundleProduct();
             $productBundleProduct->setProductBundle($productBundle);
-            $productBundleProduct->setProduct($product);
+            $productBundleProduct->setProduct($product['product']);
+            $productBundleProduct->setQty($product['qty']);
 
             if (!$productBundleProduct->toRecord()->save()) {
                 return false;
@@ -69,7 +73,7 @@ class ProductBundleService extends Component
     /**
      * @param ProductBundle $productBundle
      *
-     * @return Product[]
+     * @return array
      */
     public function getProductsForBundle(ProductBundle $productBundle)
     {
@@ -78,7 +82,10 @@ class ProductBundleService extends Component
             ->all();
 
         return array_map(function (ProductBundleProductRecord $record) {
-            return $record->getProduct();
+            return [
+                'product' => $record->getProduct(),
+                'qty' => $record->getQty(),
+            ];
         }, $records);
     }
 
@@ -109,21 +116,32 @@ class ProductBundleService extends Component
     }
 
     /**
+     * Get the product bundle orderable quantity based on the bundle quantity and bundle product quantity & stock
+     *
+     * @param ProductBundle $productBundle
      * @param LineItem $lineItem
+     *
      * @return int
      */
-    public function getOrderableQuantity(LineItem $lineItem)
+    public function getOrderableQuantity(ProductBundle $productBundle, LineItem $lineItem)
     {
         $orderableQuantity = 9999999999;
 
-        foreach ($lineItem->getOptions()['productBundleProductsVariantIds'] as $variantId) {
+        foreach ($lineItem->getOptions()[ProductBundle::KEY_PRODUCTS] as $productId => $variantId) {
             $variant = Variant::findOne(['id' => $variantId]);
-            if (!$variant->hasUnlimitedStock) {
-                if (is_null($orderableQuantity)) {
-                    $orderableQuantity = $variant->stock;
-                } else if ($variant->stock < $orderableQuantity) {
-                    $orderableQuantity = $variant->stock;
-                }
+
+            if ($variant->hasUnlimitedStock) {
+                continue;
+            }
+
+            // the orderable variant quantity is stock * qty
+            $qty = ProductBundleHelper::getProductQuantity($productBundle, $productId);
+            $orderableVariantQuantity = $variant->stock / $qty;
+
+            if (is_null($orderableQuantity)) {
+                $orderableQuantity = $orderableVariantQuantity;
+            } else if ($orderableVariantQuantity < $orderableQuantity) {
+                $orderableQuantity = $orderableVariantQuantity;
             }
         }
 
@@ -148,8 +166,8 @@ class ProductBundleService extends Component
     protected function isPurchasable(ProductBundle $productBundle)
     {
         // not enabled
-        foreach ($productBundle->getProducts() as $product) {
-            if (!$product->enabled) {
+        foreach ($productBundle->getProducts() as $productSet) {
+            if (!$productSet['product']->enabled) {
                 return false;
             }
         }

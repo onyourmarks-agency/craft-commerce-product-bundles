@@ -6,6 +6,32 @@
 {% set selectedSubnavItem = 'product-bundles' %}
 {% set fullPageForm = true %}
 
+{% set crumbs = [
+	{ label: "Commerce"|t('commerce'), url: url('commerce') },
+	{ label: "Product bundles"|t('commerce-product-bundles'), url: url('commerce/product-bundles') },
+] %}
+
+{% block header %}
+	<div class="flex flex-nowrap">
+		{{ block('pageTitle') }}
+		{{ block('contextMenu') }}
+	</div>
+	<div class="flex">
+		{% if showPreviewBtn or shareUrl is defined %}
+			<div class="btngroup">
+				{% if showPreviewBtn %}
+					<div id="preview-btn" class="btn livepreviewbtn">{{ 'Preview'|t('app') }}</div>
+				{% endif %}
+				{% if shareUrl is defined %}
+					<a id="share-btn" href="{{ shareUrl }}" class="btn sharebtn" target="_blank">{{ 'Share'|t('app') }}</a>
+				{% endif %}
+			</div>
+		{% endif %}
+		
+		{{ block('actionButton') }}
+	</div>
+{% endblock %}
+
 {% block contextMenu %}
     {% if craft.app.getIsMultiSite() %}
         <div class="btn menubtn" data-icon="world">{{ productBundle.site.name|t('site') }}</div>
@@ -16,15 +42,16 @@
                     {% set status = siteId in enabledSiteIds ? 'enabled' : 'disabled' %}
                     <li>
                         {% if siteId == productBundle.siteId %}
-                            <a class="sel">
+							<a class="sel" data-site-id="{{ siteId }}">
                                 <div class="status {{ status }}"></div>
                                 {{ site.name|t('site') }}
                             </a>
                         {% else %}
-                            <a href="{{ url('commerce/product-bundles/new/' ~ site.handle) }}">
-                                <div class="status {{ status }}"></div>
-                                {{ site.name|t('site') }}
-                            </a>
+							{% set url = url("commerce/product-bundles/#{craft.app.request.getSegment(3)}/#{site.handle}") %}
+							<a href="{{ url }}" data-site-id="{{ siteId }}">
+								<div class="status {{ status }}"></div>
+								{{ site.name|t('site') }}
+							</a>
                         {% endif %}
                     </li>
                 {% endfor %}
@@ -34,60 +61,42 @@
 {% endblock %}
 
 {% block content %}
-    {{ actionInput('commerce-product-bundles/bundles/save') }}
+    {{ actionInput('commerce-product-bundles/product-bundles/save') }}
     {{ hiddenInput('productBundleId', productBundle.id) }}
     {{ hiddenInput('siteId', productBundle.siteId) }}
     {{ redirectInput('commerce/product-bundles') }}
     {{ csrfInput() }}
 
-    <div id="fields">
-        {{ forms.textField({
-            label: 'Title'|t('commerce-product-bundles'),
-            site: productBundle.site,
-            id: 'title',
-            name: 'title',
-            value: productBundle.title,
-            errors: productBundle.getErrors('title'),
-            first: true,
-            autofocus: true,
-            required: true,
-            maxlength: 255
-        }) }}
-
-        {{ forms.elementSelectField({
-            id: 'products',
-            label: 'Products'|t('commerce-product-bundles'),
-            name: 'products',
-            elements: productBundle.getProducts(),
-            elementType: productElementType,
-            limit: null,
-            instructions: 'Select two or more products to combine in this bundle.'|t('commerce-product-bundles'),
-            errors: productBundle.getErrors('products'),
-            required: true
-        }) }}
-
-        {% set tabs = productBundle.getFieldLayout().getTabs() %}
-        {% if tabs|length %}
-            <hr>
-            <div>
-                {% for tab in tabs %}
-                    {% if tabs|length > 1 %}
-                        <h2>{{ tab.name }}</h2>
-                    {% endif %}
-                    <div>
-                        {% include '_includes/fields' with {
-                            fields: tab.getFields(),
-                            element: productBundle,
-                        } only %}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
+	{{ forms.textField({
+		label: 'Title'|t('commerce-product-bundles'),
+		site: productBundle.site,
+		id: 'title',
+		name: 'title',
+		value: productBundle.title,
+		errors: productBundle.getErrors('title'),
+		first: true,
+		autofocus: true,
+		required: true,
+		maxlength: 255
+	}) }}
+	
+	<div id="fields">
+		{{ fieldsHtml|raw }}
+	</div>
 {% endblock %}
 
 {% block details %}
     <div class="meta">
+		{{ forms.textField({
+			label: "Slug"|t('commerce-product-bundles'),
+			site: productBundle.site,
+			id: 'slug',
+			name: 'slug',
+			value: productBundle.slug,
+			placeholder: 'Enter slug'|t('commerce-product-bundles'),
+			errors: productBundle.getErrors('slug')|merge(productBundle.getErrors('uri'))
+		}) }}
+		
         {{ forms.dateTimeField({
             label: 'Post Date'|t('commerce-product-bundles'),
             id: 'postDate',
@@ -120,33 +129,6 @@
             }) }}
         {% endif %}
     </div>
-
-    <hr>
-
-    <div class="meta">
-        {{ forms.selectField({
-            label: 'Tax Category'|t('commerce-product-bundles'),
-            name: 'taxCategoryId',
-            value: productBundle.taxCategoryId,
-            required: true,
-            options: craft.commerce.taxCategories.getAllTaxCategoriesAsList()
-        }) }}
-
-        {% set shippingCategories = [] %}
-        {% for shippingCategory in craft.commerce.shippingCategories.getAllShippingCategories() %}
-            {% set shippingCategories = shippingCategories|merge([{ value: shippingCategory.id, label: shippingCategory.name }]) %}
-        {% endfor %}
-
-        {{ forms.selectField({
-            label: 'Shipping Category'|t('commerce-product-bundles'),
-            name: 'shippingCategoryId',
-            value: productBundle.shippingCategoryId,
-            required: true,
-            options: shippingCategories
-        }) }}
-    </div>
-
-    <hr>
 
     <div class="meta">
         {{ forms.textField({

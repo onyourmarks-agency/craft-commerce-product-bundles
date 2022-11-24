@@ -30,6 +30,11 @@ class ProductBundleProduct extends Model
     public $product;
 
     /**
+     * @var int
+     */
+    public $qty;
+
+    /**
      * @return int
      */
     public function getId()
@@ -78,6 +83,22 @@ class ProductBundleProduct extends Model
     }
 
     /**
+     * @return int
+     */
+    public function getQty()
+    {
+        return $this->qty;
+    }
+
+    /**
+     * @param int $qty
+     */
+    public function setQty(int $qty)
+    {
+        $this->qty = $qty;
+    }
+
+    /**
      * @return ProductBundleProductRecord
      */
     public function toRecord()
@@ -86,6 +107,7 @@ class ProductBundleProduct extends Model
         $record->setAttribute('id', $this->getId());
         $record->setAttribute('productBundleId', $this->getProductBundle()->id);
         $record->setAttribute('productId', $this->getProduct()->id);
+        $record->setAttribute('qty', $this->qty);
 
         return $record;
     }

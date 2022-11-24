@@ -2,25 +2,25 @@
 
 namespace tde\craft\commerce\bundles\elements;
 
+use craft\commerce\base\Purchasable;
+use craft\commerce\elements\Order;
 use craft\commerce\elements\Product;
 use craft\commerce\events\CustomizeProductSnapshotDataEvent;
 use craft\commerce\events\CustomizeProductSnapshotFieldsEvent;
-use craft\commerce\models\ShippingCategory;
-use craft\commerce\models\TaxCategory;
-use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
-
-use craft\elements\db\ElementQueryInterface;
+use craft\commerce\models\LineItem;
+use craft\commerce\Plugin as CommercePlugin;
 use craft\db\Query;
 use craft\elements\actions\Delete;
+use craft\elements\db\ElementQueryInterface;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use craft\validators\DateTimeValidator;
-
-use craft\commerce\Plugin as CommercePlugin;
-use craft\commerce\base\Purchasable;
-use craft\commerce\elements\Order;
-use craft\commerce\models\LineItem;
-
+use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
+use tde\craft\commerce\bundles\fieldlayoutelements\ProductField;
+use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
+use tde\craft\commerce\bundles\models\Settings;
 use tde\craft\commerce\bundles\Plugin;
 use tde\craft\commerce\bundles\records\ProductBundle as ProductBundleRecord;
 use yii\base\Exception;
@@ -42,20 +42,14 @@ class ProductBundle extends Purchasable
     const STATUS_PENDING = 'pending';
     const STATUS_EXPIRED = 'expired';
 
-    /**
-     * @var int
-     */
-    public $id;
+    // keys used in DOM and snapshots
+    const KEY_PRODUCTS = 'productBundleProducts';
+    const KEY_PRODUCTS_META = 'productBundleProductsMeta';
 
     /**
-     * @var int
+     * @var int|null
      */
-    public $taxCategoryId;
-
-    /**
-     * @var int
-     */
-    public $shippingCategoryId;
+    public ?int $id = null;
 
     /**
      * @var \DateTime
@@ -78,7 +72,7 @@ class ProductBundle extends Purchasable
     public $price;
 
     /**
-     * @var Product[]
+     * @var array
      */
     protected $_products;
 
@@ -119,7 +113,7 @@ class ProductBundle extends Purchasable
      */
     public static function hasUris(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -143,15 +137,13 @@ class ProductBundle extends Purchasable
      */
     public static function defineSources(string $context = null): array
     {
-        $sources = [
+        return [
             [
                 'key' => '*',
                 'label' => \Craft::t('commerce-product-bundles', 'All bundles'),
                 'defaultSort' => ['title', 'ASC']
             ]
         ];
-
-        return $sources;
     }
 
     /**
@@ -187,6 +179,8 @@ class ProductBundle extends Purchasable
             'price' => ['label' => \Craft::t('commerce-product-bundles', 'Price')],
             'postDate' => ['label' => \Craft::t('commerce-product-bundles', 'Post Date')],
             'expiryDate' => ['label' => \Craft::t('commerce-product-bundles', 'Expiry Date')],
+            'uri' => ['label' => \Craft::t('commerce-product-bundles', 'URI')],
+            'link' => ['label' => \Craft::t('commerce-product-bundles', 'Link'), 'icon' => 'world'],
         ];
     }
 
@@ -200,6 +194,7 @@ class ProductBundle extends Purchasable
             'sku',
             'postDate',
             'expiryDate',
+            'link',
         ];
     }
 
@@ -264,7 +259,7 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
-    public function getStatus()
+    public function getStatus(): ?string
     {
         $status = parent::getStatus();
 
@@ -294,7 +289,7 @@ class ProductBundle extends Purchasable
     {
         $rules = parent::rules();
 
-        $rules[] = [['sku', 'price', 'products'], 'required'];
+        $rules[] = [['sku', 'price'], 'required'];
         $rules[] = [['sku'], 'string'];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
@@ -324,9 +319,13 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
-    public function getUriFormat()
+    public function getUriFormat(): ?string
     {
-        return null;
+        if (!$siteSettings = ProductBundleHelper::getSiteSettings($this)) {
+            return null;
+        }
+
+        return $siteSettings['uriFormat'];
     }
 
     /**
@@ -345,7 +344,7 @@ class ProductBundle extends Purchasable
     /**
      * @inheritDoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$isNew) {
             $record = ProductBundleRecord::findOne($this->id);
@@ -360,14 +359,12 @@ class ProductBundle extends Purchasable
 
         $record->postDate = $this->postDate;
         $record->expiryDate = $this->expiryDate;
-        $record->taxCategoryId = $this->taxCategoryId;
-        $record->shippingCategoryId = $this->shippingCategoryId;
         $record->price = $this->price;
         $record->sku = $this->sku;
 
         $record->save(false);
 
-        return parent::afterSave($isNew);
+        parent::afterSave($isNew);
     }
 
     /**
@@ -405,31 +402,7 @@ class ProductBundle extends Purchasable
     /**
      * @inheritDoc
      */
-    public function getTaxCategoryId(): int
-    {
-        return $this->taxCategoryId;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getShippingCategoryId(): int
-    {
-        return $this->shippingCategoryId;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function hasFreeShipping(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getIsPromotable(): bool
     {
         return true;
     }
@@ -441,8 +414,8 @@ class ProductBundle extends Purchasable
      */
     public function hasStock(): bool
     {
-        foreach ($this->getProducts() as $product) {
-            foreach ($product->getVariants() as $variant) {
+        foreach ($this->getProducts() as $productSet) {
+            foreach ($productSet['product']->getVariants() as $variant) {
                 if ($variant->hasStock() || $variant->hasUnlimitedStock) {
                     // one of the variants of this product is in stock, continue to next product
                     continue 2;
@@ -469,15 +442,18 @@ class ProductBundle extends Purchasable
     }
 
     /**
-     * @param $products
+     * @param array $products
      */
-    public function setProducts($products)
+    public function setProducts(array $products)
     {
         $this->_products = [];
 
         if (is_array($products)) {
             foreach ($products as $product) {
-                $this->_products[] = CommercePlugin::getInstance()->getProducts()->getProductById($product);
+                $this->_products[] = [
+                    'product' => CommercePlugin::getInstance()->getProducts()->getProductById($product['product'][0]),
+                    'qty' => $product['qty'],
+                ];
             }
         }
     }
@@ -487,10 +463,10 @@ class ProductBundle extends Purchasable
      *
      * @inheritdoc
      */
-    public function afterOrderComplete(Order $order, LineItem $lineItem)
+    public function afterOrderComplete(Order $order, LineItem $lineItem): void
     {
-        foreach ($lineItem->snapshot['options']['productBundleProductsVariantIds'] as $productVariantId) {
-            $purchasable = CommercePlugin::getInstance()->getVariants()->getVariantById($productVariantId);
+        foreach ($lineItem->snapshot['options'][self::KEY_PRODUCTS] as $productId => $variantId) {
+            $purchasable = CommercePlugin::getInstance()->getVariants()->getVariantById($variantId);
 
             if ($purchasable->hasUnlimitedStock) {
                 continue;
@@ -511,7 +487,7 @@ class ProductBundle extends Purchasable
                 ->where('id = :variantId', [':variantId' => $purchasable->id])
                 ->scalar();
 
-            \Craft::$app->getTemplateCaches()->deleteCachesByElementId($this->id);
+            \Craft::$app->getElements()->invalidateCachesForElement($this);
         }
     }
 
@@ -520,38 +496,14 @@ class ProductBundle extends Purchasable
      */
     public function getSnapshot(): array
     {
-        $data = [];
-        $data['type'] = self::class;
-
-        // custom fields
-        $fields = [];
-        $fieldsEvent = new CustomizeProductSnapshotFieldsEvent([
-            'product' => $this,
-            'fields' => $fields
-        ]);
-
-        // Allow plugins to modify fields to be fetched
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT)) {
-            $this->trigger(self::EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT, $fieldsEvent);
-        }
-
-        $fieldData = $this->getSerializedFieldValues($fieldsEvent->fields);
-        $dataEvent = new CustomizeProductSnapshotDataEvent([
-            'product' => $this,
-            'fieldData' => $fieldData,
-        ]);
-
-        // Allow plugins to modify captured data
-        if ($this->hasEventHandlers(self::EVENT_AFTER_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT)) {
-            $this->trigger(self::EVENT_AFTER_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT, $dataEvent);
-        }
-
-        $data['fields'] = $dataEvent->fieldData;
-        $data['productId'] = $this->id;
-
-        return array_merge($this->getAttributes(), $data);
+        return array_merge(
+            $this->getAttributes(),
+            [
+                'type' => self::class,
+                'productId' => $this->id,
+            ],
+        );
     }
-
 
     /**
      * @inheritdoc
@@ -569,7 +521,7 @@ class ProductBundle extends Purchasable
                 'purchasableId',
                 function ($attribute, $params, Validator $validator) use ($lineItem) {
                     if ($lineItem->getPurchasable()->getStatus() != self::STATUS_LIVE) {
-                        $validator->addError($lineItem, $attribute, \Craft::t('commerce', 'The item is not enabled for sale.'));
+                        $validator->addError($lineItem, $attribute, \Craft::t('commerce-product-bundles', 'The item is not enabled for sale.'));
                     }
                 }
             ],
@@ -578,15 +530,15 @@ class ProductBundle extends Purchasable
                 function ($attribute, $params, Validator $validator) use ($lineItem) {
                     // no stock at all
                     if (!$this->hasStock()) {
-                        $error = \Craft::t('commerce', '"{description}" is currently out of stock.', ['description' => $lineItem->purchasable->getDescription()]);
+                        $error = \Craft::t('commerce-product-bundles', '"{description}" is currently out of stock.', ['description' => $lineItem->purchasable->getDescription()]);
                         $validator->addError($lineItem, $attribute, $error);
                     }
 
-                    $orderableQuantity = Plugin::getInstance()->productBundleService->getOrderableQuantity($lineItem);
+                    $orderableQuantity = Plugin::getInstance()->productBundleService->getOrderableQuantity($this, $lineItem);
 
                     // lineItem qty exceeds the quantity left
                     if ($this->hasStock() && $lineItem->qty > $orderableQuantity) {
-                        $error = \Craft::t('commerce', 'There are only {num} "{description}" items left in stock.', [
+                        $error = \Craft::t('commerce-product-bundles', 'There are only {num} "{description}" items left in stock.', [
                             'num' => $orderableQuantity,
                             'description' => $lineItem->purchasable->getDescription()
                         ]);
@@ -601,9 +553,15 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    public function getCpEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('commerce/product-bundles/' . $this->id);
+        $url = UrlHelper::cpUrl('commerce/product-bundles/' . $this->id);
+
+        if (\Craft::$app->getIsMultiSite()) {
+            $url .= '/' . $this->getSite()->handle;
+        }
+
+        return $url;
     }
 
     /**
@@ -617,9 +575,24 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
-        return \Craft::$app->getFields()->getLayoutByType(self::class);
+        $fieldLayout = \Craft::$app->getFields()->getLayoutByType(self::class);
+
+        $layoutTabs = $fieldLayout->getTabs();
+        $layoutTabs[] = FieldLayoutTab::createFromConfig([
+            'layout' => $fieldLayout,
+            'name' => \Craft::t('commerce-product-bundles', 'Products'),
+            'elements' => [
+                [
+                    'type' => ProductField::class,
+                ],
+            ],
+        ]);
+
+        $fieldLayout->setTabs($layoutTabs);
+
+        return $fieldLayout;
     }
 
     /**
@@ -630,46 +603,34 @@ class ProductBundle extends Purchasable
     protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
-            case 'taxCategory':
-                $taxCategory = $this->getTaxCategory();
-
-                return ($taxCategory ? \Craft::t('site', $taxCategory->name) : '');
-            case 'shippingCategory':
-                $shippingCategory = $this->getShippingCategory();
-
-                return ($shippingCategory ? \Craft::t('site', $shippingCategory->name) : '');
-            case 'defaultPrice':
+            case 'price':
                 $code = CommercePlugin::getInstance()->getPaymentCurrencies()->getPrimaryPaymentCurrencyIso();
 
                 return \Craft::$app->getLocale()->getFormatter()->asCurrency($this->$attribute, strtoupper($code));
-            case 'promotable':
-                return ($this->$attribute ? '<span data-icon="check" title="' . \Craft::t('commerce-product-bundles', 'Yes') . '"></span>' : '');
             default:
                 return parent::tableAttributeHtml($attribute);
         }
     }
 
     /**
-     * @return TaxCategory|null
+     * @inheritdoc
      */
-    public function getTaxCategory()
+    protected function route(): array|null|string
     {
-        if ($this->taxCategoryId) {
-            return CommercePlugin::getInstance()->getTaxCategories()->getTaxCategoryById($this->taxCategoryId);
+        // Make sure the product type is set to have URLs for this site
+        $siteId = \Craft::$app->getSites()->currentSite->id;
+
+        if (!$siteSettings = ProductBundleHelper::getSiteSettings($this, $siteId)) {
+            return null;
         }
 
-        return null;
-    }
-
-    /**
-     * @return ShippingCategory|null
-     */
-    public function getShippingCategory()
-    {
-        if ($this->shippingCategoryId) {
-            return CommercePlugin::getInstance()->getShippingCategories()->getShippingCategoryById($this->shippingCategoryId);
-        }
-
-        return null;
+        return [
+            'templates/render', [
+                'template' => (string) $siteSettings['template'],
+                'variables' => [
+                    'productBundle' => $this,
+                ]
+            ]
+        ];
     }
 }

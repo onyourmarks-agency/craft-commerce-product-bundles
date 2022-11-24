@@ -39,4 +39,12 @@ class ProductBundleProduct extends ActiveRecord
             'status' => null
         ]);
     }
+
+    /**
+     * @return int
+     */
+    public function getQty()
+    {
+        return $this->qty;
+    }
 }

@@ -131,8 +131,6 @@ class ProductBundleQuery extends ElementQuery
 
         $this->query->select([
             'commerce_product_bundles_bundles.id',
-            'commerce_product_bundles_bundles.taxCategoryId',
-            'commerce_product_bundles_bundles.shippingCategoryId',
             'commerce_product_bundles_bundles.postDate',
             'commerce_product_bundles_bundles.expiryDate',
             'commerce_product_bundles_bundles.sku',
@@ -155,7 +153,7 @@ class ProductBundleQuery extends ElementQuery
      * @return array|false|string|\yii\db\ExpressionInterface|null
      * @throws \Exception
      */
-    protected function statusCondition(string $status)
+    protected function statusCondition(string $status): mixed
     {
         $currentTimeDb = Db::prepareDateForDb(new \DateTime());
 

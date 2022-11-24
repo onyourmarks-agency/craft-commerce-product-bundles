@@ -1,14 +1,71 @@
 {% extends '_layouts/cp' %}
 
+{% import '_includes/forms' as forms %}
+
 {% set fullPageForm = true %}
 
 {% set title = 'Product bundles settings'|t('commerce-product-bundles') %}
 {% set selectedSubnavItem = 'product-bundles' %}
 
+{% set crumbs = [
+	{ label: "Commerce"|t('commerce'), url: url('commerce') },
+	{ label: "Product bundles"|t('commerce-product-bundles'), url: url('commerce/product-bundles') },
+] %}
+
 {% block content %}
     {{ actionInput('commerce-product-bundles/settings/save') }}
     {{ redirectInput('commerce/product-bundles/settings') }}
     {{ csrfInput() }}
+	
+	{% set siteRows = [] %}
+	{% set siteErrors = [] %}
+	
+	{% for site in craft.app.sites.getAllSites() %}
+		{% set siteSettingsSite = siteSettings[site.id] ?? null %}
+		{% set siteRows = siteRows|merge({
+			(site.handle): {
+				heading: site.name|t('site'),
+				uriFormat: {
+					value: siteSettingsSite.uriFormat ?? null
+				},
+				template: {
+					value: siteSettingsSite.template ?? null
+				}
+			}
+		}) %}
+	{% endfor %}
+	
+	{{ forms.editableTableField({
+		label: 'Site Settings'|t('app'),
+		instructions: 'Configure the product types’s site-specific settings.'|t('app'),
+		id: 'sites',
+		name: 'sites',
+		cols: {
+			heading: {
+				type: 'heading',
+				heading: 'Site'|t('app'),
+				class: 'thin'
+			},
+			uriFormat: {
+				type: 'singleline',
+				heading: 'Product URI Format'|t('app'),
+				info: 'What product URIs should look like for the site.'|t('app'),
+				placeholder: 'Leave blank if products don’t have URLs'|t('app'),
+				code: true
+			},
+			template: {
+				type: 'template',
+				heading: 'Template'|t('app'),
+				info: 'Which template should be loaded when an entry’s URL is requested.'|t('app'),
+				code: true
+			},
+		},
+		rows: siteRows,
+		staticRows: true,
+		errors: siteErrors|unique
+	}) }}
+	
+	<hr>
 
     {% include "_includes/fieldlayoutdesigner" with {
         fieldLayout: fieldLayout

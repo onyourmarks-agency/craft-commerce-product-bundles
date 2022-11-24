@@ -24,17 +24,44 @@ return [
     'Select two or more products to combine in this bundle.' => 'Select two or more products to combine in this bundle.',
     'Enabled' => 'Enabled',
     'Enabled for site' => 'Enabled for site',
-    'Tax Category' => 'Tax Category',
-    'Shipping Category' => 'Shipping Category',
     'Enter SKU' => 'Enter SKU',
     'Enter price' => 'Enter price',
     'Date Created' => 'Date Created',
     'Date Updated' => 'Date Updated',
-    'No product bundle with the ID “{id}”' => 'No product bundle with the ID “{id}”',
     'Couldn’t save product bundle.' => 'Couldn’t save product bundle.',
     'Product bundle saved.' => 'Product bundle saved.',
     'Could not save field layout.' => 'Could not save field layout.',
     'Field layout saved.' => 'Field layout saved.',
     'Commerce product bundle(s)' => 'Commerce product bundle(s)',
     'Add a product bundle' => 'Add a product bundle',
+
+    // product matrix
+    'Product' => 'Product',
+    'Enter the quantity for this product, 1 or more is required.' => 'Enter the quantity for this product, 1 or more is required.',
+    'Quantity' => 'Quantity',
+    'Select' => 'Select',
+    'Actions' => 'Actions',
+    'Collapse' => 'Collapse',
+    'Expand' => 'Expand',
+    'Add product above' => 'Add product above',
+    'Add a product' => 'Add a product',
+    'Delete' => 'Delete',
+    'Reorder' => 'Reorder',
+    'Are you sure you want to delete the selected products?' => 'Are you sure you want to delete the selected products?',
+
+    // settings
+    'Couldn’t save settings.' => 'Couldn’t save settings.',
+    'Settings saved.' => 'Settings saved.',
+
+    // product bundle
+    'URI' => 'URI',
+    'Link' => 'Link',
+    'Slug' => 'Slug',
+    'Enter slug' => 'Enter slug',
+    'The item is not enabled for sale.' => 'The item is not enabled for sale.',
+    '"{description}" is currently out of stock.' => '"{description}" is currently out of stock.',
+    'There are only {num} "{description}" items left in stock.' => 'There are only {num} "{description}" items left in stock.',
+
+    // exceptions
+    'No product bundle with the ID “{id}”' => 'No product bundle with the ID “{id}”',
 ];

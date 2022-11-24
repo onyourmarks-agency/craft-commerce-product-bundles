@@ -2,6 +2,7 @@
 
 namespace tde\craft\commerce\bundles;
 
+use craft\base\Model;
 use craft\commerce\elements\Variant;
 use craft\commerce\events\LineItemEvent;
 use craft\commerce\services\LineItems;
@@ -15,35 +16,24 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\services\Elements;
 use craft\web\twig\variables\Cp;
+use tde\craft\commerce\bundles\behaviors\ProductBundleBehavior;
 use tde\craft\commerce\bundles\elements\ProductBundle;
 use tde\craft\commerce\bundles\fields\ProductBundleField;
+use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
 use tde\craft\commerce\bundles\models\Settings;
 use tde\craft\commerce\bundles\services\ProductBundleService;
 use tde\craft\commerce\bundles\variables\ProductBundlesVariable;
 use yii\base\Event;
 
 /**
- * Class Plugin
- *
  * @property ProductBundleService $productBundleService
- *
  * @package tde\craft\commerce\bundles
  */
 class Plugin extends \craft\base\Plugin
 {
-    /**
-     * @var self
-     */
-    public static $instance;
+    public static self $instance;
+    public bool $hasCpSettings = true;
 
-    /**
-     * @var bool
-     */
-    public $hasCpSettings = true;
-
-    /**
-     * @inheritDoc
-     */
     public function init()
     {
         parent::init();
@@ -65,18 +55,12 @@ class Plugin extends \craft\base\Plugin
         $this->_registerCpRoutes();
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?Model
     {
         return new Settings();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsResponse()
+    public function getSettingsResponse(): mixed
     {
         return \Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('commerce/product-bundles/settings'));
     }
@@ -101,6 +85,9 @@ class Plugin extends \craft\base\Plugin
                 /** @var CraftVariable $variable */
                 $variable = $e->sender;
                 $variable->set('commerceProductBundles', ProductBundlesVariable::class);
+                $variable->attachBehaviors([
+                    ProductBundleBehavior::class,
+                ]);
             }
         );
 
@@ -108,15 +95,27 @@ class Plugin extends \craft\base\Plugin
             LineItems::class,
             LineItems::EVENT_POPULATE_LINE_ITEM,
             function (LineItemEvent $lineItemEvent) {
-                if (!isset($lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantIds'])) {
+                $lineItem = $lineItemEvent->lineItem;
+                $purchasable = $lineItem->getPurchasable();
+
+                if (!$purchasable instanceof ProductBundle) {
                     return;
                 }
 
-                $lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantMeta'] = [];
+                if (!isset($lineItem->snapshot['options'][ProductBundle::KEY_PRODUCTS])) {
+                    return;
+                }
 
-                foreach ($lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantIds'] as $variantId) {
+                $lineItem->snapshot['options'][ProductBundle::KEY_PRODUCTS_META] = [];
+
+                foreach ($lineItem->snapshot['options'][ProductBundle::KEY_PRODUCTS] as $productId => $variantId) {
                     $variant = Variant::findOne(['id' => $variantId]);
-                    $lineItemEvent->lineItem->snapshot['options']['productBundleProductsVariantMeta'][] = $variant->getSnapshot();
+                    $qty = ProductBundleHelper::getProductQuantity($purchasable, $productId);
+
+                    $lineItem->snapshot['options'][ProductBundle::KEY_PRODUCTS_META][] = [
+                        'variant' => $variant->getSnapshot(),
+                        'qty' => $qty,
+                    ];
                 }
             }
         );
@@ -174,9 +173,11 @@ class Plugin extends \craft\base\Plugin
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules = array_merge($event->rules, [
-                    'commerce/product-bundles' => 'commerce-product-bundles/bundles/index',
-                    'commerce/product-bundles/new' => 'commerce-product-bundles/bundles/edit',
-                    'commerce/product-bundles/<productBundleId:\d+>' => 'commerce-product-bundles/bundles/edit',
+                    'commerce/product-bundles' => 'commerce-product-bundles/product-bundles/index',
+                    'commerce/product-bundles/new' => 'commerce-product-bundles/product-bundles/edit',
+                    'commerce/product-bundles/new/<siteHandle:{handle}>' => 'commerce-product-bundles/product-bundles/edit',
+                    'commerce/product-bundles/<productBundleId:\d+>' => 'commerce-product-bundles/product-bundles/edit',
+                    'commerce/product-bundles/<productBundleId:\d+>/<siteHandle:{handle}>' => 'commerce-product-bundles/product-bundles/edit',
                     'commerce/product-bundles/settings' => 'commerce-product-bundles/settings',
                 ]);
             }
