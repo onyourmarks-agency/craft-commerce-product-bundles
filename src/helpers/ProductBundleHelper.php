@@ -66,7 +66,7 @@ class ProductBundleHelper
         $productBundle->title = $request->getBodyParam('title', $productBundle->title);
         $productBundle->slug = $request->getBodyParam('slug', StringHelper::slugify($productBundle->title));
 
-        $productBundle->setProducts($request->getBodyParam('products'));
+        $productBundle->setProducts($request->getBodyParam('products') ?: []);
         $productBundle->setFieldValuesFromRequest('fields');
 
         // meta
