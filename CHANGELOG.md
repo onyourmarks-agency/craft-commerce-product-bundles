@@ -1,5 +1,11 @@
 # Release Notes for `tde/commerce-product-bundles`
 
+## 2.0.1 - 2020-12-19
+
+### Fixes
+
+- Fix error when misconfiguring product bundle
+
 ## 2.0.0 - 2020-11-24
 
 ### New features
