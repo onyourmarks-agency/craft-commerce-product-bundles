@@ -1,5 +1,11 @@
 # Release Notes for `tde/commerce-product-bundles`
 
+## 2.0.2 - 2020-12-19
+
+### Fixes
+
+- Fix link not clickable after Craft update
+
 ## 2.0.1 - 2020-12-19
 
 ### Fixes

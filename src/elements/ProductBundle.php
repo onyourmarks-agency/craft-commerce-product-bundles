@@ -12,7 +12,9 @@ use craft\commerce\Plugin as CommercePlugin;
 use craft\db\Query;
 use craft\elements\actions\Delete;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\User;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
@@ -23,6 +25,7 @@ use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
 use tde\craft\commerce\bundles\models\Settings;
 use tde\craft\commerce\bundles\Plugin;
 use tde\craft\commerce\bundles\records\ProductBundle as ProductBundleRecord;
+use Twig\Markup;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -553,6 +556,14 @@ class ProductBundle extends Purchasable
     /**
      * @inheritdoc
      */
+    public function getLink(): ?Markup
+    {
+        return Template::raw("<a href='" . $this->getCpEditUrl() . "'>" . $this->title . '</a>');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCpEditUrl(): ?string
     {
         $url = UrlHelper::cpUrl('commerce/product-bundles/' . $this->id);
@@ -632,5 +643,10 @@ class ProductBundle extends Purchasable
                 ]
             ]
         ];
+    }
+
+    public function canView(User $user): bool
+    {
+        return true;
     }
 }
