@@ -7,8 +7,8 @@
 {% set fullPageForm = true %}
 
 {% set crumbs = [
-	{ label: "Commerce"|t('commerce'), url: url('commerce') },
-	{ label: "Product bundles"|t('commerce-product-bundles'), url: url('commerce/product-bundles') },
+	{ label: 'Commerce'|t('commerce'), url: url('commerce') },
+	{ label: 'Product bundles'|t('commerce-product-bundles'), url: url('commerce/product-bundles') },
 ] %}
 
 {% block header %}
@@ -83,12 +83,14 @@
 	<div id="fields">
 		{{ fieldsHtml|raw }}
 	</div>
+	
+	{% hook 'cp.tde.productbundle.edit.content' %}
 {% endblock %}
 
 {% block details %}
     <div class="meta">
 		{{ forms.textField({
-			label: "Slug"|t('commerce-product-bundles'),
+			label: 'Slug'|t('commerce-product-bundles'),
 			site: productBundle.site,
 			id: 'slug',
 			name: 'slug',

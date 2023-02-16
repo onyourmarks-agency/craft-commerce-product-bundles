@@ -1,18 +1,24 @@
 # Release Notes for `tde/commerce-product-bundles`
 
-## 2.0.2 - 2020-12-19
+## 2.0.3 - 2023-02-16
+
+### New features
+
+- Added hook `cp.tde.productbundle.edit.content` that allows to extend the product bundle sidebar
+
+## 2.0.2 - 2022-12-19
 
 ### Fixes
 
 - Fix link not clickable after Craft update
 
-## 2.0.1 - 2020-12-19
+## 2.0.1 - 2022-12-19
 
 ### Fixes
 
 - Fix error when misconfiguring product bundle
 
-## 2.0.0 - 2020-11-24
+## 2.0.0 - 2022-11-24
 
 ### New features
 
