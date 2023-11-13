@@ -168,11 +168,13 @@ class ProductBundle extends Purchasable
     protected static function defineActions(string $source = null): array
     {
         return [
-            \Craft::$app->getElements()->createAction([
+            \Craft::$app->getElements()->createAction(
+                [
                 'type' => Delete::class,
                 'confirmationMessage' => \Craft::t('commerce-product-bundles', 'Are you sure you want to delete the selected product bundle(s)?'),
                 'successMessage' => \Craft::t('commerce-product-bundles', 'Bundles deleted.'),
-            ])
+                ]
+            )
         ];
     }
 
@@ -383,7 +385,7 @@ class ProductBundle extends Purchasable
      */
     public function getPrice(): float
     {
-        return $this->price;
+        return (float) $this->price;
     }
 
     /**
@@ -501,7 +503,8 @@ class ProductBundle extends Purchasable
                 ->update(
                     '{{%commerce_variants}}',
                     ['stock' => new Expression('stock - :qty', [':qty' => ($lineItem->qty)])],
-                    ['id' => $purchasable->id])
+                    ['id' => $purchasable->id]
+                )
                 ->execute();
 
             // Update the stock
@@ -525,10 +528,12 @@ class ProductBundle extends Purchasable
 
         // custom fields
         $fields = [];
-        $fieldsEvent = new CustomizeProductSnapshotFieldsEvent([
+        $fieldsEvent = new CustomizeProductSnapshotFieldsEvent(
+            [
             'product' => $this,
             'fields' => $fields
-        ]);
+            ]
+        );
 
         // Allow plugins to modify fields to be fetched
         if ($this->hasEventHandlers(self::EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT)) {
@@ -536,10 +541,12 @@ class ProductBundle extends Purchasable
         }
 
         $fieldData = $this->getSerializedFieldValues($fieldsEvent->fields);
-        $dataEvent = new CustomizeProductSnapshotDataEvent([
+        $dataEvent = new CustomizeProductSnapshotDataEvent(
+            [
             'product' => $this,
             'fieldData' => $fieldData,
-        ]);
+            ]
+        );
 
         // Allow plugins to modify captured data
         if ($this->hasEventHandlers(self::EVENT_AFTER_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT)) {
@@ -586,10 +593,12 @@ class ProductBundle extends Purchasable
 
                     // lineItem qty exceeds the quantity left
                     if ($this->hasStock() && $lineItem->qty > $orderableQuantity) {
-                        $error = \Craft::t('commerce', 'There are only {num} "{description}" items left in stock.', [
+                        $error = \Craft::t(
+                            'commerce', 'There are only {num} "{description}" items left in stock.', [
                             'num' => $orderableQuantity,
                             'description' => $lineItem->purchasable->getDescription()
-                        ]);
+                            ]
+                        );
                         $validator->addError($lineItem, $attribute, $error);
                     }
                 },
@@ -630,22 +639,22 @@ class ProductBundle extends Purchasable
     protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
-            case 'taxCategory':
-                $taxCategory = $this->getTaxCategory();
+        case 'taxCategory':
+            $taxCategory = $this->getTaxCategory();
 
-                return ($taxCategory ? \Craft::t('site', $taxCategory->name) : '');
-            case 'shippingCategory':
-                $shippingCategory = $this->getShippingCategory();
+            return ($taxCategory ? \Craft::t('site', $taxCategory->name) : '');
+        case 'shippingCategory':
+            $shippingCategory = $this->getShippingCategory();
 
-                return ($shippingCategory ? \Craft::t('site', $shippingCategory->name) : '');
-            case 'defaultPrice':
-                $code = CommercePlugin::getInstance()->getPaymentCurrencies()->getPrimaryPaymentCurrencyIso();
+            return ($shippingCategory ? \Craft::t('site', $shippingCategory->name) : '');
+        case 'defaultPrice':
+            $code = CommercePlugin::getInstance()->getPaymentCurrencies()->getPrimaryPaymentCurrencyIso();
 
-                return \Craft::$app->getLocale()->getFormatter()->asCurrency($this->$attribute, strtoupper($code));
-            case 'promotable':
-                return ($this->$attribute ? '<span data-icon="check" title="' . \Craft::t('commerce-product-bundles', 'Yes') . '"></span>' : '');
-            default:
-                return parent::tableAttributeHtml($attribute);
+            return \Craft::$app->getLocale()->getFormatter()->asCurrency($this->$attribute, strtoupper($code));
+        case 'promotable':
+            return ($this->$attribute ? '<span data-icon="check" title="' . \Craft::t('commerce-product-bundles', 'Yes') . '"></span>' : '');
+        default:
+            return parent::tableAttributeHtml($attribute);
         }
     }
 

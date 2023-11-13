@@ -1,5 +1,11 @@
 # Release Notes for `tde/commerce-product-bundles`
 
+## 1.1.3 - 2023-11-13
+
+### Fixes
+
+- Force float typehint on price, backport Craft 4
+
 ## 1.1.2 - 2020-10-28
 
 ### Fixes
