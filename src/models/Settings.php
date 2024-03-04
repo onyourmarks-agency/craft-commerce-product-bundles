@@ -1,16 +1,11 @@
 <?php
 
-namespace tde\craft\commerce\bundles\models;
+namespace oym\craft\commerce\bundles\models;
 
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\models\FieldLayout;
 
-/**
- * Class Settings
- *
- * @package tde\craft\commerce\bundles\models
- */
 class Settings extends Model
 {
     /**

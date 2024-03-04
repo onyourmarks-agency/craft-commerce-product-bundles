@@ -1,14 +1,11 @@
 <?php
 
-namespace tde\craft\commerce\bundles\behaviors;
+namespace oym\craft\commerce\bundles\behaviors;
 
-use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
-use tde\craft\commerce\bundles\elements\ProductBundle;
+use oym\craft\commerce\bundles\elements\db\ProductBundleQuery;
+use oym\craft\commerce\bundles\elements\ProductBundle;
 use yii\base\Behavior;
 
-/**
- * @package tde\craft\commerce\bundles\behaviors
- */
 class ProductBundleBehavior extends Behavior
 {
     /**

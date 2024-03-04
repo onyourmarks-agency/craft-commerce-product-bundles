@@ -1,6 +1,6 @@
 <?php
 
-namespace tde\craft\commerce\bundles\controllers;
+namespace oym\craft\commerce\bundles\controllers;
 
 use craft\commerce\elements\Product;
 use craft\errors\ElementNotFoundException;
@@ -9,10 +9,10 @@ use craft\errors\SiteNotFoundException;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
-use tde\craft\commerce\bundles\assetbundles\productbundles\ProductBundlesAsset;
-use tde\craft\commerce\bundles\elements\ProductBundle;
-use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
-use tde\craft\commerce\bundles\Plugin;
+use oym\craft\commerce\bundles\assetbundles\productbundles\ProductBundlesAsset;
+use oym\craft\commerce\bundles\elements\ProductBundle;
+use oym\craft\commerce\bundles\helpers\ProductBundleHelper;
+use oym\craft\commerce\bundles\Plugin;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -20,11 +20,6 @@ use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
-/**
- * Class ProductBundlesController
- *
- * @package tde\craft\commerce\bundles\controllers
- */
 class ProductBundlesController extends Controller
 {
     /**

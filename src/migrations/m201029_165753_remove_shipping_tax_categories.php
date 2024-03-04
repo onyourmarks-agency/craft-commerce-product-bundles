@@ -1,13 +1,10 @@
 <?php
 
-namespace tde\craft\commerce\bundles\migrations;
+namespace oym\craft\commerce\bundles\migrations;
 
 use Craft;
 use craft\db\Migration;
 
-/**
- * m201029_165753_remove_shipping_tax_categories migration.
- */
 class m201029_165753_remove_shipping_tax_categories extends Migration
 {
     /**

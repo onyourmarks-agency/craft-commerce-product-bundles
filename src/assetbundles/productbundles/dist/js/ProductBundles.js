@@ -56,4 +56,4 @@ Craft.Bundles.ProductBundlesIndex = Craft.BaseElementIndex.extend({
 });
 
 // Register it!
-Craft.registerElementIndexClass('tde\\craft\\commerce\\bundles\\elements\\ProductBundle', Craft.Bundles.ProductBundlesIndex);
+Craft.registerElementIndexClass('oym\\craft\\commerce\\bundles\\elements\\ProductBundle', Craft.Bundles.ProductBundlesIndex);

@@ -1,21 +1,16 @@
 <?php
 
-namespace tde\craft\commerce\bundles\controllers;
+namespace oym\craft\commerce\bundles\controllers;
 
 use craft\errors\MissingComponentException;
 use craft\web\Controller;
-use tde\craft\commerce\bundles\elements\ProductBundle;
-use tde\craft\commerce\bundles\models\Settings;
-use tde\craft\commerce\bundles\Plugin;
+use oym\craft\commerce\bundles\elements\ProductBundle;
+use oym\craft\commerce\bundles\models\Settings;
+use oym\craft\commerce\bundles\Plugin;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
-/**
- * Class SettingsController
- *
- * @package tde\craft\commerce\bundles\controllers
- */
 class SettingsController extends Controller
 {
     /**

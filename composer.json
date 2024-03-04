@@ -1,5 +1,5 @@
 {
-	"name": "tde/craft-commerce-product-bundles",
+	"name": "oym/craft-commerce-product-bundles",
 	"description": "Combine multiple products into a purchasable bundle to sell these for a special price.",
 	"type": "craft-plugin",
 	"require": {
@@ -10,25 +10,26 @@
 	"license": "proprietary",
 	"authors": [
 		{
-			"name": "TDE",
-			"email": "info@tde.nl"
+			"name": "On Your Marks",
+			"email": "info@onyourmarks.agency"
 		}
 	],
 	"autoload": {
 		"psr-4": {
-			"tde\\craft\\commerce\\bundles\\": "src/"
-		}
+			"oym\\craft\\commerce\\bundles\\": "src/"
+		},
+		"files": ["src/deprecated.php"]
 	},
 	"extra": {
 		"name": "Commerce Product Bundles",
 		"handle": "commerce-product-bundles",
 		"hasCpSettings": true,
 		"hasCpSection": false,
-		"changelogUrl": "https://raw.githubusercontent.com/tdeNL/craft-commerce-product-bundles/master/CHANGELOG.md",
-		"documentationUrl": "https://github.com/tdeNL/craft-commerce-product-bundles",
+		"changelogUrl": "https://raw.githubusercontent.com/onyourmarks-agency/craft-commerce-product-bundles/master/CHANGELOG.md",
+		"documentationUrl": "https://github.com/onyourmarks-agency/craft-commerce-product-bundles",
 		"components": {
-			"productBundleService": "tde\\craft\\commerce\\bundles\\services\\ProductBundleService"
+			"productBundleService": "oym\\craft\\commerce\\bundles\\services\\ProductBundleService"
 		},
-		"class": "tde\\craft\\commerce\\bundles\\Plugin"
+		"class": "oym\\craft\\commerce\\bundles\\Plugin"
 	}
 }

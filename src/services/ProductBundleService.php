@@ -1,6 +1,6 @@
 <?php
 
-namespace tde\craft\commerce\bundles\services;
+namespace oym\craft\commerce\bundles\services;
 
 use craft\base\ElementInterface;
 use craft\commerce\elements\Product;
@@ -8,20 +8,14 @@ use craft\commerce\elements\Variant;
 use craft\commerce\models\LineItem;
 use craft\db\Query;
 use craft\errors\ElementNotFoundException;
-use tde\craft\commerce\bundles\elements\ProductBundle;
-use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
-use tde\craft\commerce\bundles\models\ProductBundleProduct;
-use tde\craft\commerce\bundles\models\Settings;
-use tde\craft\commerce\bundles\Plugin;
-use tde\craft\commerce\bundles\records\ProductBundleProduct as ProductBundleProductRecord;
+use oym\craft\commerce\bundles\elements\ProductBundle;
+use oym\craft\commerce\bundles\helpers\ProductBundleHelper;
+use oym\craft\commerce\bundles\models\ProductBundleProduct;
+use oym\craft\commerce\bundles\records\ProductBundleProduct as ProductBundleProductRecord;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
-/**
- * Class ProductBundleService
- * @package tde\craft\commerce\bundles\services
- */
 class ProductBundleService extends Component
 {
     /**
@@ -140,7 +134,7 @@ class ProductBundleService extends Component
 
             if (is_null($orderableQuantity)) {
                 $orderableQuantity = $orderableVariantQuantity;
-            } else if ($orderableVariantQuantity < $orderableQuantity) {
+            } elseif ($orderableVariantQuantity < $orderableQuantity) {
                 $orderableQuantity = $orderableVariantQuantity;
             }
         }

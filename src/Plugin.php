@@ -1,6 +1,6 @@
 <?php
 
-namespace tde\craft\commerce\bundles;
+namespace oym\craft\commerce\bundles;
 
 use craft\base\Model;
 use craft\commerce\elements\Variant;
@@ -16,18 +16,17 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\services\Elements;
 use craft\web\twig\variables\Cp;
-use tde\craft\commerce\bundles\behaviors\ProductBundleBehavior;
-use tde\craft\commerce\bundles\elements\ProductBundle;
-use tde\craft\commerce\bundles\fields\ProductBundleField;
-use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
-use tde\craft\commerce\bundles\models\Settings;
-use tde\craft\commerce\bundles\services\ProductBundleService;
-use tde\craft\commerce\bundles\variables\ProductBundlesVariable;
+use oym\craft\commerce\bundles\behaviors\ProductBundleBehavior;
+use oym\craft\commerce\bundles\elements\ProductBundle;
+use oym\craft\commerce\bundles\fields\ProductBundleField;
+use oym\craft\commerce\bundles\helpers\ProductBundleHelper;
+use oym\craft\commerce\bundles\models\Settings;
+use oym\craft\commerce\bundles\services\ProductBundleService;
+use oym\craft\commerce\bundles\variables\ProductBundlesVariable;
 use yii\base\Event;
 
 /**
  * @property ProductBundleService $productBundleService
- * @package tde\craft\commerce\bundles
  */
 class Plugin extends \craft\base\Plugin
 {
@@ -65,9 +64,6 @@ class Plugin extends \craft\base\Plugin
         return \Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('commerce/product-bundles/settings'));
     }
 
-    /**
-     * Register events
-     */
     protected function _registerEvents()
     {
         Event::on(
@@ -129,15 +125,12 @@ class Plugin extends \craft\base\Plugin
         );
     }
 
-    /**
-     * Register our Control Panel navigation item under 'Products' of the Commerce subnav
-     */
     protected function _registerCpNavItem()
     {
         Event::on(
             Cp::class,
             Cp::EVENT_REGISTER_CP_NAV_ITEMS,
-            function(RegisterCpNavItemsEvent $event) {
+            function (RegisterCpNavItemsEvent $event) {
                 foreach ($event->navItems as $navKey => $navItem) {
                     if ($navItem['url'] === 'commerce') {
                         $keys = array_keys($event->navItems[$navKey]['subnav']);
@@ -163,9 +156,6 @@ class Plugin extends \craft\base\Plugin
         );
     }
 
-    /**
-     * Register Control Panel routes
-     */
     protected function _registerCpRoutes()
     {
         Event::on(

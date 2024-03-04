@@ -1,24 +1,18 @@
 <?php
 
-namespace tde\craft\commerce\bundles\controllers;
+namespace oym\craft\commerce\bundles\controllers;
 
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
-use tde\craft\commerce\bundles\elements\ProductBundle;
-use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
-use tde\craft\commerce\bundles\Plugin;
+use oym\craft\commerce\bundles\elements\ProductBundle;
+use oym\craft\commerce\bundles\helpers\ProductBundleHelper;
+use oym\craft\commerce\bundles\Plugin;
 use yii\web\HttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
-/**
- * @package tde\craft\commerce\bundles\controllers
- */
 class ProductBundlesPreviewController extends Controller
 {
-    /**
-     * @inheritdoc
-     */
     protected int|bool|array $allowAnonymous = true;
 
     /**

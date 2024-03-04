@@ -1,17 +1,12 @@
 <?php
 
-namespace tde\craft\commerce\bundles\models;
+namespace oym\craft\commerce\bundles\models;
 
 use craft\base\Model;
 use craft\commerce\elements\Product;
-use tde\craft\commerce\bundles\elements\ProductBundle as ProductBundleElement;
-use tde\craft\commerce\bundles\records\ProductBundleProduct as ProductBundleProductRecord;
+use oym\craft\commerce\bundles\elements\ProductBundle as ProductBundleElement;
+use oym\craft\commerce\bundles\records\ProductBundleProduct as ProductBundleProductRecord;
 
-/**
- * Class ProductBundleProduct
- *
- * @package tde\craft\commerce\bundles\models
- */
 class ProductBundleProduct extends Model
 {
     /**

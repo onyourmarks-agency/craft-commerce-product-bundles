@@ -1,4 +1,10 @@
-# Release Notes for `tde/commerce-product-bundles`
+# Release Notes for `oym/commerce-product-bundles`
+
+## 2.1.0 - 2024-03-04
+
+### Updated
+
+- Updated TDE > OYM
 
 ## 2.0.3 - 2023-02-16
 

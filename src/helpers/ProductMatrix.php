@@ -1,19 +1,16 @@
 <?php
 
-namespace tde\craft\commerce\bundles\helpers;
+namespace oym\craft\commerce\bundles\helpers;
 
 use craft\commerce\elements\Product;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use tde\craft\commerce\bundles\assetbundles\productmatrix\ProductMatrixAsset;
-use tde\craft\commerce\bundles\elements\ProductBundle;
+use oym\craft\commerce\bundles\assetbundles\productmatrix\ProductMatrixAsset;
+use oym\craft\commerce\bundles\elements\ProductBundle;
 use Twig\Error\Error;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
-/**
- * @package tde\craft\commerce\bundles\helpers
- */
 class ProductMatrix
 {
     /**
@@ -63,7 +60,6 @@ class ProductMatrix
 
         return $html;
     }
-
 
     /**
      * Returns info about each product field type for a product matrix.

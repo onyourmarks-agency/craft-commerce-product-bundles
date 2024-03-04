@@ -1,19 +1,13 @@
 <?php
 
-namespace tde\craft\commerce\bundles\assetbundles\productmatrix;
+namespace oym\craft\commerce\bundles\assetbundles\productmatrix;
 
 use craft\commerce\web\assets\commercecp\CommerceCpAsset;
 use craft\web\AssetBundle;
 use craft\web\View;
 
-/**
- * @package tde\craft\commerce\bundles\assetbundles\productmatrix
- */
 class ProductMatrixAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
         $this->sourcePath = __DIR__ . '/dist';

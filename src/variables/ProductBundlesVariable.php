@@ -1,18 +1,13 @@
 <?php
 
-namespace tde\craft\commerce\bundles\variables;
+namespace oym\craft\commerce\bundles\variables;
 
 use craft\commerce\elements\Product;
-use tde\craft\commerce\bundles\elements\ProductBundle;
-use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
-use tde\craft\commerce\bundles\Plugin;
+use oym\craft\commerce\bundles\elements\ProductBundle;
+use oym\craft\commerce\bundles\helpers\ProductBundleHelper;
+use oym\craft\commerce\bundles\Plugin;
 use yii\base\InvalidConfigException;
 
-/**
- * Class ProductBundlesVariable
- *
- * @package tde\craft\commerce\bundles\variables
- */
 class ProductBundlesVariable
 {
     /**

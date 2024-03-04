@@ -1,20 +1,15 @@
 <?php
 
-namespace tde\craft\commerce\bundles\elements\db;
+namespace oym\craft\commerce\bundles\elements\db;
 
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use tde\craft\commerce\bundles\elements\ProductBundle;
+use oym\craft\commerce\bundles\elements\ProductBundle;
 use yii\base\UnknownPropertyException;
 
-/**
- * Class ProductBundleQuery
- *
- * @package tde\craft\commerce\bundles\elements\db
- */
 class ProductBundleQuery extends ElementQuery
 {
     public $editable = false;
@@ -68,7 +63,7 @@ class ProductBundleQuery extends ElementQuery
         }
 
         $this->postDate = ArrayHelper::toArray($this->postDate);
-        $this->postDate[] = '<'.$value;
+        $this->postDate[] = '<' . $value;
 
         return $this;
     }
@@ -84,7 +79,7 @@ class ProductBundleQuery extends ElementQuery
         }
 
         $this->postDate = ArrayHelper::toArray($this->postDate);
-        $this->postDate[] = '>='.$value;
+        $this->postDate[] = '>=' . $value;
 
         return $this;
     }

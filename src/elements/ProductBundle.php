@@ -1,6 +1,6 @@
 <?php
 
-namespace tde\craft\commerce\bundles\elements;
+namespace oym\craft\commerce\bundles\elements;
 
 use craft\commerce\base\Purchasable;
 use craft\commerce\elements\Order;
@@ -19,23 +19,17 @@ use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\validators\DateTimeValidator;
-use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
-use tde\craft\commerce\bundles\fieldlayoutelements\ProductField;
-use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
-use tde\craft\commerce\bundles\models\Settings;
-use tde\craft\commerce\bundles\Plugin;
-use tde\craft\commerce\bundles\records\ProductBundle as ProductBundleRecord;
+use oym\craft\commerce\bundles\elements\db\ProductBundleQuery;
+use oym\craft\commerce\bundles\fieldlayoutelements\ProductField;
+use oym\craft\commerce\bundles\helpers\ProductBundleHelper;
+use oym\craft\commerce\bundles\Plugin;
+use oym\craft\commerce\bundles\records\ProductBundle as ProductBundleRecord;
 use Twig\Markup;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 use yii\validators\Validator;
 
-/**
- * Class ProductBundle
- *
- * @package tde\craft\commerce\bundles\elements
- */
 class ProductBundle extends Purchasable
 {
     const EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT = 'beforeCaptureProductBundleSnapshot';
@@ -480,7 +474,8 @@ class ProductBundle extends Purchasable
                 ->update(
                     '{{%commerce_variants}}',
                     ['stock' => new Expression('stock - :qty', [':qty' => ($lineItem->qty)])],
-                    ['id' => $purchasable->id])
+                    ['id' => $purchasable->id]
+                )
                 ->execute();
 
             // Update the stock

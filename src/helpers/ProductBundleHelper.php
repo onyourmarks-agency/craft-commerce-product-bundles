@@ -1,20 +1,17 @@
 <?php
 
-namespace tde\craft\commerce\bundles\helpers;
+namespace oym\craft\commerce\bundles\helpers;
 
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Localization;
 use craft\helpers\StringHelper;
 use craft\web\Request;
-use tde\craft\commerce\bundles\elements\ProductBundle;
-use tde\craft\commerce\bundles\models\Settings;
-use tde\craft\commerce\bundles\Plugin;
+use oym\craft\commerce\bundles\elements\ProductBundle;
+use oym\craft\commerce\bundles\models\Settings;
+use oym\craft\commerce\bundles\Plugin;
 use yii\base\InvalidCallException;
 use yii\web\NotFoundHttpException;
 
-/**
- * @package tde\craft\commerce\bundles\helpers
- */
 class ProductBundleHelper
 {
     /**

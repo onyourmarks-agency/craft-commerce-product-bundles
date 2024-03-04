@@ -1,24 +1,16 @@
 <?php
 
-namespace tde\craft\commerce\bundles\migrations;
+namespace oym\craft\commerce\bundles\migrations;
 
 use craft\db\Migration;
 use craft\helpers\MigrationHelper;
 
-/**
- * Class Install
- *
- * @package tde\craft\commerce\bundles\migrations
- */
 class Install extends Migration
 {
     const TABLE_PREFIX = 'commerce_product_bundles_';
     const TABLE_BUNDLES = self::TABLE_PREFIX . 'bundles';
     const TABLE_BUNDLES_PRODUCTS = self::TABLE_BUNDLES . '_products';
 
-    /**
-     * @inheritdoc
-     */
     public function safeUp()
     {
         // start fresh

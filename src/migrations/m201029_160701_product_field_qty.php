@@ -1,13 +1,10 @@
 <?php
 
-namespace tde\craft\commerce\bundles\migrations;
+namespace oym\craft\commerce\bundles\migrations;
 
 use Craft;
 use craft\db\Migration;
 
-/**
- * m201029_160701_product_field_qty migration.
- */
 class m201029_160701_product_field_qty extends Migration
 {
     /**
