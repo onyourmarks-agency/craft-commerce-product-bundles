@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace tde\craft\commerce\bundles\elements;
 
@@ -480,7 +481,8 @@ class ProductBundle extends Purchasable
                 ->update(
                     '{{%commerce_variants}}',
                     ['stock' => new Expression('stock - :qty', [':qty' => ($lineItem->qty)])],
-                    ['id' => $purchasable->id])
+                    ['id' => $purchasable->id]
+                )
                 ->execute();
 
             // Update the stock
@@ -513,7 +515,7 @@ class ProductBundle extends Purchasable
         }
 
         if ($products = $this->getProducts()) {
-            foreach($products as $productItem) {
+            foreach ($products as $productItem) {
                 $product = $productItem['product'];
                 $productAttributes = $product->attributes();
 
@@ -529,15 +531,15 @@ class ProductBundle extends Purchasable
                     $productAttributes[] = $field;
                 }
 
-                $data['products'][] = [
+                $data['products'][] = array_merge($product->toArray($productAttributes, [], false), [
                     'qty' => $productItem['qty'],
-                    'product' => $product->toArray($productAttributes, [], false),
-                ];
+                ]);
             }
 
             $productDataEvent = new CustomizeProductBundleSnapshotDataEvent([
                 'products' => $this->getProducts(),
-                'fieldData' => $data['products'],
+                'fieldData' => array_map(static fn (array $product) =>
+                    array_merge($product['product'], $product['qty']), $data['products']),
             ]);
         } else {
             $productDataEvent = new CustomizeProductBundleSnapshotDataEvent([
@@ -707,7 +709,7 @@ class ProductBundle extends Purchasable
 
     protected function mapProductsForSnapshot(): array
     {
-        return array_map(static function(array $productItem) {
+        return array_map(static function (array $productItem) {
             return $productItem['product'];
         }, $this->getProducts());
     }
