@@ -515,6 +515,7 @@ class ProductBundle extends Purchasable
         }
 
         if ($products = $this->getProducts()) {
+            $data = [];
             foreach ($products as $productItem) {
                 $product = $productItem['product'];
                 $productAttributes = $product->attributes();
@@ -538,8 +539,7 @@ class ProductBundle extends Purchasable
 
             $productDataEvent = new CustomizeProductBundleSnapshotDataEvent([
                 'products' => $this->getProducts(),
-                'fieldData' => array_map(static fn (array $product) =>
-                    array_merge($product['product'], $product['qty']), $data['products']),
+                'fieldData' => $data['products'],
             ]);
         } else {
             $productDataEvent = new CustomizeProductBundleSnapshotDataEvent([
