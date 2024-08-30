@@ -5,28 +5,28 @@ namespace tde\craft\commerce\bundles\elements;
 use craft\commerce\base\Purchasable;
 use craft\commerce\elements\Order;
 use craft\commerce\elements\Product;
-use craft\commerce\events\CustomizeProductSnapshotDataEvent;
-use craft\commerce\events\CustomizeProductSnapshotFieldsEvent;
 use craft\commerce\models\LineItem;
 use craft\commerce\Plugin as CommercePlugin;
 use craft\db\Query;
 use craft\elements\actions\Delete;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\validators\DateTimeValidator;
+use Exception;
 use tde\craft\commerce\bundles\elements\db\ProductBundleQuery;
+use tde\craft\commerce\bundles\events\CustomizeProductBundleSnapshotFieldsEvent;
+use tde\craft\commerce\bundles\events\CustomizeProductBundleSnapshotDataEvent;
 use tde\craft\commerce\bundles\fieldlayoutelements\ProductField;
 use tde\craft\commerce\bundles\helpers\ProductBundleHelper;
-use tde\craft\commerce\bundles\models\Settings;
 use tde\craft\commerce\bundles\Plugin;
 use tde\craft\commerce\bundles\records\ProductBundle as ProductBundleRecord;
 use Twig\Markup;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 use yii\validators\Validator;
@@ -499,8 +499,63 @@ class ProductBundle extends Purchasable
      */
     public function getSnapshot(): array
     {
+        // Default Product custom field handles
+        $productBundleFields = [];
+
+        $productBundleFields = new CustomizeProductBundleSnapshotFieldsEvent([
+            'products' => $this->mapProductsForSnapshot(),
+            'fields' => $productBundleFields,
+        ]);
+
+        // Allow plugins to modify Product fields to be fetched
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT)) {
+            $this->trigger(self::EVENT_BEFORE_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT, $productBundleFields);
+        }
+
+        if ($products = $this->getProducts()) {
+            foreach($products as $productItem) {
+                $product = $productItem['product'];
+                $productAttributes = $product->attributes();
+
+                // Remove custom fields
+                if (($fieldLayout = $product->getFieldLayout()) !== null) {
+                    foreach ($fieldLayout->getCustomFields() as $field) {
+                        ArrayHelper::removeValue($productAttributes, $field->handle);
+                    }
+                }
+
+                // Add back the custom fields they want
+                foreach ($productBundleFields->fields as $field) {
+                    $productAttributes[] = $field;
+                }
+
+                $data['products'][] = [
+                    'qty' => $productItem['qty'],
+                    'product' => $product->toArray($productAttributes, [], false),
+                ];
+            }
+
+            $productDataEvent = new CustomizeProductBundleSnapshotDataEvent([
+                'products' => $this->getProducts(),
+                'fieldData' => $data['products'],
+            ]);
+        } else {
+            $productDataEvent = new CustomizeProductBundleSnapshotDataEvent([
+                'products' => $this->mapProductsForSnapshot(),
+                'fieldData' => [],
+            ]);
+        }
+
+        // Allow plugins to modify captured Product data
+        if ($this->hasEventHandlers(self::EVENT_AFTER_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT)) {
+            $this->trigger(self::EVENT_AFTER_CAPTURE_PRODUCT_BUNDLE_SNAPSHOT, $productDataEvent);
+        }
+
+        $data['products'] = $productDataEvent->fieldData;
+
         return array_merge(
             $this->getAttributes(),
+            $data,
             [
                 'type' => self::class,
                 'productId' => $this->id,
@@ -648,5 +703,12 @@ class ProductBundle extends Purchasable
     public function canView(User $user): bool
     {
         return true;
+    }
+
+    protected function mapProductsForSnapshot(): array
+    {
+        return array_map(static function(array $productItem) {
+            return $productItem['product'];
+        }, $this->getProducts());
     }
 }
